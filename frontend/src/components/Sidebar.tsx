@@ -22,6 +22,7 @@ interface SidebarProps {
   onOpenSettings: () => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  onMobileSelectNote?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -39,7 +40,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenCategoryManager,
   onOpenSettings,
   collapsed,
-  onToggleCollapse
+  onToggleCollapse,
+  onMobileSelectNote
 }) => {
   const [categoriesOpen, setCategoriesOpen] = React.useState(true);
   const [tagsOpen, setTagsOpen] = React.useState(true);
@@ -81,7 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       className={`h-full flex flex-col border-r mac-transition mac-acrylic select-none z-20 relative mac-inset-highlight ${
-        collapsed ? 'w-14' : 'w-72'
+        collapsed ? 'w-full lg:w-14' : 'w-full lg:w-72'
       }`}
       style={{
         backgroundColor: 'var(--bg-sidebar)',
@@ -267,7 +269,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   return (
                     <div
                       key={n.id}
-                      onClick={() => onSelectNote(n)}
+                      onClick={() => {
+                        onSelectNote(n);
+                        if (onMobileSelectNote) onMobileSelectNote();
+                      }}
                       className={`group relative p-2.5 rounded-xl cursor-pointer mac-transition text-left border ${
                         isActive
                           ? 'bg-blue-600/15 border-blue-500/40 text-white shadow-xs mac-inset-highlight'

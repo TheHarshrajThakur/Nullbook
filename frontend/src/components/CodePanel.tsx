@@ -131,7 +131,7 @@ export const CodePanel: React.FC<CodePanelProps> = ({
 
   return (
     <div
-      className="w-1/2 flex flex-col h-full overflow-hidden select-none relative z-10"
+      className="w-full lg:w-1/2 flex flex-col h-full overflow-hidden select-none relative z-10"
       style={{
         backgroundColor: '#070a11',
         borderLeft: '1px solid var(--border-subtle)'
@@ -139,16 +139,16 @@ export const CodePanel: React.FC<CodePanelProps> = ({
     >
       {/* Top Controls Bar */}
       <div
-        className="h-11 px-4 border-b flex items-center justify-between gap-2 mac-acrylic z-10"
+        className="h-11 px-2.5 sm:px-4 border-b flex items-center justify-between gap-1.5 sm:gap-2 mac-acrylic z-10 shrink-0"
         style={{
           backgroundColor: 'var(--bg-header)',
           borderColor: 'var(--border-subtle)'
         }}
       >
         {/* Language Selector */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <div
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border mac-transition"
+            className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg border mac-transition"
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.04)',
               borderColor: 'var(--border-card)'
@@ -175,16 +175,16 @@ export const CodePanel: React.FC<CodePanelProps> = ({
         </div>
 
         {/* Right Actions Bar */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
           {/* Revisions History Button */}
           <button
             onClick={onOpenRevisions}
             title="View Code Revision History"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/[0.06] text-gray-300 hover:text-white text-xs font-medium border mac-btn transition"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/[0.06] text-gray-300 hover:text-white text-xs font-medium border mac-btn transition"
             style={{ borderColor: 'var(--border-card)' }}
           >
             <History className="w-3.5 h-3.5 text-blue-400" />
-            <span>Revisions</span>
+            <span className="hidden sm:inline">Revisions</span>
             <span className="text-[10px] px-1 rounded bg-blue-500/20 text-blue-300 font-mono">
               {note.revisions_count || 0}
             </span>
@@ -390,22 +390,23 @@ export const CodePanel: React.FC<CodePanelProps> = ({
 
       {/* Footer Validation & Run Actions */}
       <div
-        className="h-11 px-4 border-t flex items-center justify-between mac-acrylic z-10"
+        className="h-11 px-2.5 sm:px-4 border-t flex items-center justify-between mac-acrylic z-10 shrink-0"
         style={{
           backgroundColor: 'var(--bg-header)',
           borderColor: 'var(--border-subtle)'
         }}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Validate Syntax Button */}
           <button
             onClick={handleValidate}
             disabled={validating || !note.generated_code}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-40 text-gray-200 text-xs font-semibold border mac-btn transition"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-40 text-gray-200 text-xs font-semibold border mac-btn transition"
             style={{ borderColor: 'var(--border-card)' }}
           >
             <CheckCircle2 className={`w-3.5 h-3.5 ${validating ? 'animate-spin text-blue-400' : 'text-blue-400'}`} />
-            <span>Validate Syntax</span>
+            <span className="hidden sm:inline">Validate Syntax</span>
+            <span className="sm:hidden">Validate</span>
           </button>
 
           {/* Run Code Button */}
@@ -413,10 +414,11 @@ export const CodePanel: React.FC<CodePanelProps> = ({
             onClick={handleExecute}
             disabled={executing || !note.generated_code}
             title="Execute safely in sandbox"
-            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs mac-btn transition active:scale-95 disabled:opacity-40"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs mac-btn transition active:scale-95 disabled:opacity-40"
           >
             <Play className={`w-3 h-3 ${executing ? 'animate-spin' : 'fill-white'}`} />
-            <span>Run Code</span>
+            <span className="hidden sm:inline">Run Code</span>
+            <span className="sm:hidden">Run</span>
           </button>
         </div>
 
@@ -425,10 +427,11 @@ export const CodePanel: React.FC<CodePanelProps> = ({
           onClick={onGenerateCode}
           disabled={isGenerating || !note.content.trim()}
           title="Regenerate code"
-          className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-semibold border border-blue-500/30 mac-btn transition disabled:opacity-40"
+          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-semibold border border-blue-500/30 mac-btn transition disabled:opacity-40"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
-          <span>Regenerate</span>
+          <span className="hidden sm:inline">Regenerate</span>
+          <span className="sm:hidden">Regen</span>
         </button>
       </div>
     </div>

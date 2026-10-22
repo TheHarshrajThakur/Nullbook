@@ -172,3 +172,18 @@
   animation: mac-shimmer 2.2s infinite ease-in-out;
 }
 
+/* Mobile & Touch Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.mobile-viewport {
+  height: 100vh;
+  height: 100dvh;
+}
+
+

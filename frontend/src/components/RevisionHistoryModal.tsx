@@ -52,7 +52,7 @@ export const RevisionHistoryModal: React.FC<RevisionHistoryModalProps> = ({
     >
       <div
         onClick={e => e.stopPropagation()}
-        className="w-full max-w-4xl h-[580px] rounded-2xl border mac-acrylic mac-window-shadow flex flex-col overflow-hidden text-left mac-inset-highlight animate-in zoom-in-95 duration-150"
+        className="w-full max-w-4xl h-[85vh] max-h-[620px] rounded-2xl border mac-acrylic mac-window-shadow flex flex-col overflow-hidden text-left mac-inset-highlight animate-in zoom-in-95 duration-150"
         style={{
           backgroundColor: 'var(--bg-surface-elevated)',
           borderColor: 'var(--border-card)'
@@ -60,33 +60,33 @@ export const RevisionHistoryModal: React.FC<RevisionHistoryModalProps> = ({
       >
         {/* macOS Sheet Header */}
         <div
-          className="p-4 px-5 border-b flex items-center justify-between"
+          className="p-3.5 sm:p-4 px-4 sm:px-5 border-b flex items-center justify-between"
           style={{ borderColor: 'var(--border-subtle)' }}
         >
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
               <History className="w-4 h-4" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h3 className="text-sm font-semibold text-white tracking-tight">Revision Timeline</h3>
-              <p className="text-[11px] text-gray-400">
-                Preserved code generation drafts for: <strong className="text-gray-200">{note.title}</strong>
+              <p className="text-[11px] text-gray-400 truncate">
+                Preserved code drafts for: <strong className="text-gray-200">{note.title}</strong>
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.08] mac-btn transition"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.08] mac-btn transition shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Content Split: Left Revisions List, Right Code Viewer */}
-        <div className="flex-1 flex overflow-hidden">
+        {/* Content Split: Revisions List and Code Viewer */}
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* Revisions Sidebar List */}
           <div
-            className="w-72 border-r overflow-y-auto p-2.5 space-y-1.5"
+            className="h-44 md:h-auto md:w-72 border-b md:border-b-0 md:border-r overflow-y-auto p-2.5 space-y-1.5 shrink-0"
             style={{
               backgroundColor: 'rgba(0, 0, 0, 0.25)',
               borderColor: 'var(--border-subtle)'

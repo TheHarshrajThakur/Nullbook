@@ -53,9 +53,11 @@ coverage.xml
 
 # Databases & local user note storage
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
-backend/data/*.db
+backend/data/*.db*
 backend/data/backups/*
 backend/data/exports/*
 !backend/data/.gitkeep

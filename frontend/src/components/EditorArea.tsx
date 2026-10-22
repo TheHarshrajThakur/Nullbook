@@ -149,7 +149,7 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
     >
       {/* macOS Top Mode & Action Bar */}
       <div
-        className="h-11 px-4 border-b flex items-center justify-between gap-3 mac-acrylic z-10"
+        className="h-11 px-3 sm:px-4 border-b flex items-center justify-between gap-2 sm:gap-3 mac-acrylic z-10 shrink-0"
         style={{
           backgroundColor: 'var(--bg-header)',
           borderColor: 'var(--border-subtle)'
@@ -161,24 +161,24 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
             <button
               key={mode}
               onClick={() => onUpdateNote({ note_type: mode })}
-              className={`px-3 py-1 text-[11px] font-semibold rounded-md capitalize transition ${
+              className={`px-2.5 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold rounded-md capitalize transition ${
                 note.note_type === mode
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              {mode} Mode
+              {mode}
             </button>
           ))}
         </div>
 
         {/* Intent Detection Notification Pill */}
         {intentInfo && note.note_type === 'auto' && (
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium border bg-blue-500/10 border-blue-500/25 text-blue-300">
+          <div className="hidden xs:flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-medium border bg-blue-500/10 border-blue-500/25 text-blue-300">
             {intentInfo.is_coding ? (
               <>
                 <Zap className="w-3 h-3 text-amber-400 animate-pulse" />
-                <span>Coding Task: {intentInfo.language ? intentInfo.language.toUpperCase() : 'DETECTED'}</span>
+                <span className="truncate max-w-[120px] sm:max-w-none">Coding: {intentInfo.language ? intentInfo.language.toUpperCase() : 'DETECTED'}</span>
               </>
             ) : (
               <>
@@ -190,7 +190,7 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
         )}
 
         {/* Right Note Actions */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
           {/* Copy Full Note */}
           <button
             onClick={handleCopyNote}
@@ -223,21 +223,21 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
       </div>
 
       {/* Note Title & Metadata Shelf */}
-      <div className="px-6 pt-4 pb-3 border-b space-y-3" style={{ borderColor: 'var(--border-subtle)' }}>
+      <div className="px-3.5 sm:px-6 pt-3 sm:pt-4 pb-2.5 sm:pb-3 border-b space-y-2.5 sm:space-y-3 shrink-0" style={{ borderColor: 'var(--border-subtle)' }}>
         {/* Title Input */}
         <input
           type="text"
           value={note.title}
           onChange={e => onUpdateNote({ title: e.target.value })}
           placeholder="Untitled Note..."
-          className="w-full bg-transparent text-xl font-bold tracking-tight text-white placeholder-gray-500 outline-none"
+          className="w-full bg-transparent text-lg sm:text-xl font-bold tracking-tight text-white placeholder-gray-500 outline-none"
         />
 
         {/* Metadata Controls Row */}
-        <div className="flex flex-wrap items-center gap-2.5 text-xs">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 text-xs">
           {/* Category Dropdown Pill */}
           <div
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border mac-transition"
+            className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg border mac-transition"
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.04)',
               borderColor: 'var(--border-card)'
@@ -247,7 +247,7 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
             <select
               value={note.category_id || ''}
               onChange={e => onUpdateNote({ category_id: e.target.value || null })}
-              className="bg-transparent text-gray-200 outline-none cursor-pointer text-xs pr-1 font-medium"
+              className="bg-transparent text-gray-200 outline-none cursor-pointer text-xs pr-1 font-medium max-w-[120px] sm:max-w-none truncate"
             >
               <option value="" className="bg-[#0f172a] text-gray-400">Select Category</option>
               {categories.map(cat => (
@@ -296,39 +296,39 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
         </div>
 
         {/* Quick Markdown Formatting Toolbar */}
-        <div className="flex items-center gap-1 pt-1 text-gray-400 text-xs">
+        <div className="flex items-center gap-1 pt-1 text-gray-400 text-xs overflow-x-auto no-scrollbar">
           <button
             onClick={() => insertFormatting('**', '**')}
             title="Bold (**text**)"
-            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn"
+            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn shrink-0"
           >
             <Bold className="w-3 h-3" />
           </button>
           <button
             onClick={() => insertFormatting('*', '*')}
             title="Italic (*text*)"
-            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn"
+            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn shrink-0"
           >
             <Italic className="w-3 h-3" />
           </button>
           <button
             onClick={() => insertFormatting('```\n', '\n```')}
             title="Code Block"
-            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn"
+            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn shrink-0"
           >
             <Code className="w-3 h-3" />
           </button>
           <button
             onClick={() => insertFormatting('- ')}
             title="Bullet List"
-            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn"
+            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn shrink-0"
           >
             <List className="w-3 h-3" />
           </button>
           <button
             onClick={() => insertFormatting('> ')}
             title="Quote"
-            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn"
+            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn shrink-0"
           >
             <Quote className="w-3 h-3" />
           </button>
@@ -336,7 +336,7 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
       </div>
 
       {/* Main Text Content Area */}
-      <div className="flex-1 px-6 py-4 flex flex-col min-h-0 relative">
+      <div className="flex-1 px-3.5 sm:px-6 py-3 sm:py-4 flex flex-col min-h-0 relative">
         <textarea
           ref={textareaRef}
           value={note.content}
@@ -346,14 +346,14 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
               ? "Describe your programming task in ordinary English...\n\nExample:\n'Write a Python program that accepts a list of numbers, removes duplicate values and prints the numbers in ascending order.'"
               : "Type notes, algorithms, architectural specs, or technical thoughts here..."
           }
-          className="flex-1 w-full bg-transparent text-sm leading-relaxed text-gray-100 placeholder-gray-500 outline-none resize-none font-sans"
+          className="flex-1 w-full bg-transparent text-base sm:text-sm leading-relaxed text-gray-100 placeholder-gray-500 outline-none resize-none font-sans"
           style={{ lineHeight: '1.7' }}
         />
 
         {/* Floating Quick Action Banner when Code Mode is active or Auto Mode detects coding task */}
         {(note.note_type === 'code' || (note.note_type === 'auto' && intentInfo?.is_coding)) && note.content.trim().length > 0 && (
           <div
-            className={`absolute bottom-4 left-6 right-6 p-3 rounded-xl border mac-acrylic mac-window-shadow flex items-center justify-between gap-3 ${
+            className={`absolute bottom-16 sm:bottom-4 left-3 right-3 sm:left-6 sm:right-6 p-2.5 sm:p-3 rounded-xl border mac-acrylic mac-window-shadow flex items-center justify-between gap-2 sm:gap-3 z-20 ${
               isGenerating ? 'ai-shimmer' : ''
             }`}
             style={{
@@ -361,16 +361,16 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
               borderColor: isGenerating ? 'var(--accent-mac)' : 'var(--border-card)'
             }}
           >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
                 <Sparkles className="w-4 h-4 animate-spin-slow" />
               </div>
-              <div className="text-left">
-                <div className="text-xs font-semibold text-white tracking-tight">
-                  {isGenerating ? 'Generating Code with Local Qwen AI...' : 'Ready to Convert to Code'}
+              <div className="text-left min-w-0">
+                <div className="text-xs font-semibold text-white tracking-tight truncate">
+                  {isGenerating ? 'Generating Code with Local AI...' : 'Ready to Convert to Code'}
                 </div>
-                <div className="text-[10px] text-gray-400">
-                  Target: {note.language?.toUpperCase() || 'PYTHON'} • 100% Offline & Private
+                <div className="text-[10px] text-gray-400 truncate">
+                  Target: {note.language?.toUpperCase() || 'PYTHON'}
                 </div>
               </div>
             </div>
@@ -378,7 +378,7 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
             <button
               onClick={onGenerateCode}
               disabled={isGenerating}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-xs mac-btn transition active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-xs mac-btn transition active:scale-95 disabled:opacity-50 shrink-0"
             >
               {isGenerating ? (
                 <>
@@ -396,9 +396,9 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
         )}
       </div>
 
-      {/* Editor Footer */}
+      {/* Editor Footer (Desktop only) */}
       <div
-        className="h-9 px-4 border-t flex items-center justify-between text-[11px] text-gray-400 mac-acrylic"
+        className="hidden sm:flex h-9 px-4 border-t items-center justify-between text-[11px] text-gray-400 mac-acrylic shrink-0"
         style={{
           backgroundColor: 'var(--bg-header)',
           borderColor: 'var(--border-subtle)'

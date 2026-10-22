@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Search, Mic, Moon, Sun, X, Sparkles, Filter, Code, FileText,
-  Command, CornerDownLeft, ArrowRight, ShieldCheck, Zap
+  Command, CornerDownLeft, ArrowRight, ShieldCheck, Zap, Menu
 } from 'lucide-react';
 import { SearchResultItem, Theme } from '../types';
 import { api } from '../services/api';
@@ -12,6 +12,7 @@ interface TopSearchBarProps {
   theme: Theme;
   onToggleTheme: () => void;
   offlineStatus: string;
+  onOpenMobileNotes?: () => void;
 }
 
 export const TopSearchBar: React.FC<TopSearchBarProps> = ({
@@ -19,7 +20,8 @@ export const TopSearchBar: React.FC<TopSearchBarProps> = ({
   onOpenVoice,
   theme,
   onToggleTheme,
-  offlineStatus
+  offlineStatus,
+  onOpenMobileNotes
 }) => {
   const [query, setQuery] = useState('');
   const [searchType, setSearchType] = useState<'all' | 'keyword' | 'semantic'>('all');
@@ -95,16 +97,27 @@ export const TopSearchBar: React.FC<TopSearchBarProps> = ({
     <>
       {/* macOS Frosted Titlebar */}
       <header
-        className="h-11 border-b flex items-center justify-between px-3.5 select-none mac-acrylic z-30 relative mac-inset-highlight"
+        className="h-11 border-b flex items-center justify-between px-2.5 sm:px-3.5 select-none mac-acrylic z-30 relative mac-inset-highlight"
         style={{
           backgroundColor: 'var(--bg-header)',
           borderColor: 'var(--border-subtle)'
         }}
       >
-        {/* Left: macOS Traffic Lights + App Brand */}
-        <div className="flex items-center gap-3">
-          {/* Traffic lights */}
-          <div className="flex items-center gap-2 group cursor-pointer mr-1">
+        {/* Left: Mobile Menu + macOS Traffic Lights + App Brand */}
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          {/* Mobile Menu Button to open Notes */}
+          {onOpenMobileNotes && (
+            <button
+              onClick={onOpenMobileNotes}
+              title="Open Notes List"
+              className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.06] transition"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Traffic lights (Desktop only) */}
+          <div className="hidden sm:flex items-center gap-2 group cursor-pointer mr-1">
             <div className="w-3 h-3 rounded-full bg-[#ff5f57] border border-[#e0443e] shadow-sm flex items-center justify-center text-[8px] font-bold text-[#4c0000] opacity-90 group-hover:opacity-100 transition">
               <span className="opacity-0 group-hover:opacity-100 leading-none">×</span>
             </div>
@@ -116,43 +129,44 @@ export const TopSearchBar: React.FC<TopSearchBarProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pl-1 border-l" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div className="flex items-center gap-1.5 sm:gap-2 sm:pl-1 sm:border-l" style={{ borderColor: 'var(--border-subtle)' }}>
             <span className="text-xs font-semibold tracking-tight text-white/90">
-              IntelliNote
+              Nullbook
             </span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium tracking-wide bg-blue-500/15 text-blue-400 border border-blue-500/25">
-              PRO
+            <span className="text-[9px] sm:text-[10px] px-1.5 py-0.2 sm:py-0.5 rounded-full font-medium tracking-wide bg-blue-500/15 text-blue-400 border border-blue-500/25">
+              AI
             </span>
           </div>
         </div>
 
         {/* Center: macOS Spotlight Trigger Pill */}
-        <div className="flex-1 max-w-md mx-4">
+        <div className="flex-1 max-w-md mx-2 sm:mx-4">
           <button
             onClick={() => {
               setIsSpotlightOpen(true);
               setTimeout(() => inputRef.current?.focus(), 50);
             }}
-            className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl border mac-transition hover:border-blue-500/50 hover:bg-white/[0.04] text-left group shadow-xs cursor-text"
+            className="w-full flex items-center justify-between px-2.5 sm:px-3 py-1.5 rounded-xl border mac-transition hover:border-blue-500/50 hover:bg-white/[0.04] text-left group shadow-xs cursor-text"
             style={{
               backgroundColor: 'rgba(0, 0, 0, 0.22)',
               borderColor: 'var(--border-card)'
             }}
           >
-            <div className="flex items-center gap-2 text-xs text-gray-400 group-hover:text-gray-300">
-              <Search className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-400 mac-transition" />
-              <span className="truncate">Search notes, code, tags, or concepts...</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-gray-400 group-hover:text-gray-300 min-w-0">
+              <Search className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-400 shrink-0 mac-transition" />
+              <span className="truncate hidden sm:inline">Search notes, code, tags, or concepts...</span>
+              <span className="truncate sm:hidden">Search notes...</span>
             </div>
           </button>
         </div>
 
         {/* Right: Quick Actions & Status */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {/* Voice Dictation Button */}
           <button
             onClick={onOpenVoice}
-            title="Offline Voice Dictation & Quick Commands"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border mac-btn text-xs font-medium text-gray-200 shadow-xs hover:border-red-500/40 hover:bg-red-500/10 active:scale-95 transition"
+            title="Voice Dictation & Quick Commands"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg border mac-btn text-xs font-medium text-gray-200 shadow-xs hover:border-red-500/40 hover:bg-red-500/10 active:scale-95 transition"
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.04)',
               borderColor: 'var(--border-card)'
@@ -162,12 +176,12 @@ export const TopSearchBar: React.FC<TopSearchBarProps> = ({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
-            <span className="text-[11px] font-medium">Voice</span>
+            <span className="text-[11px] font-medium hidden sm:inline">Voice</span>
           </button>
 
-          {/* Offline AI Status Pill */}
+          {/* AI Status Pill (Desktop only) */}
           <div
-            className="flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[11px] font-medium"
+            className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[11px] font-medium"
             style={{
               backgroundColor: 'rgba(255, 255, 255, 0.03)',
               borderColor: 'var(--border-subtle)'
@@ -175,7 +189,7 @@ export const TopSearchBar: React.FC<TopSearchBarProps> = ({
           >
             <span className={`w-1.5 h-1.5 rounded-full ${offlineStatus === 'ready' ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-amber-400'}`} />
             <span className="text-[11px] text-gray-300 font-mono tracking-tight">
-              {offlineStatus === 'ready' ? 'Ollama Ready' : 'Standby'}
+              {offlineStatus === 'ready' ? 'AI Ready' : 'Standby'}
             </span>
           </div>
 
@@ -193,27 +207,27 @@ export const TopSearchBar: React.FC<TopSearchBarProps> = ({
       {/* macOS Spotlight Modal Overlay */}
       {isSpotlightOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 bg-black/55 backdrop-blur-md transition-all duration-150 animate-in fade-in"
+          className="fixed inset-0 z-50 flex items-start justify-center pt-10 sm:pt-20 px-3 sm:px-4 bg-black/60 backdrop-blur-md transition-all duration-150 animate-in fade-in"
           onClick={() => setIsSpotlightOpen(false)}
         >
           <div
             onClick={e => e.stopPropagation()}
-            className="w-full max-w-2xl rounded-2xl border mac-acrylic mac-window-shadow overflow-hidden flex flex-col text-left mac-inset-highlight animate-in zoom-in-95 duration-150"
+            className="w-full max-w-2xl rounded-2xl border mac-acrylic mac-window-shadow overflow-hidden flex flex-col text-left mac-inset-highlight animate-in zoom-in-95 duration-150 max-h-[85vh]"
             style={{
               backgroundColor: 'var(--bg-surface-elevated)',
               borderColor: 'var(--border-card)'
             }}
           >
             {/* Spotlight Input Box */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
-              <Search className="w-5 h-5 text-blue-400 shrink-0" />
+            <div className="flex items-center gap-2 sm:gap-3 px-3.5 sm:px-4 py-2.5 sm:py-3 border-b shrink-0" style={{ borderColor: 'var(--border-subtle)' }}>
+              <Search className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400 shrink-0" />
               <input
                 ref={inputRef}
                 type="text"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Spotlight Search: type notes, code, functions, tags..."
+                placeholder="Search notes, code, functions, tags..."
                 className="w-full bg-transparent text-sm text-white placeholder-gray-400 outline-none font-medium"
                 autoFocus
               />

@@ -98,7 +98,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Sheet Body */}
-        <div className="p-5 space-y-4 max-h-[500px] overflow-y-auto text-xs">
+        <div className="p-4 sm:p-5 space-y-4 max-h-[70vh] overflow-y-auto text-xs">
           {/* Status Diagnostic Card */}
           <div
             className="p-3.5 rounded-xl border space-y-2.5 bg-black/25"
