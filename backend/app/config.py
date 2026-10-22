@@ -22,6 +22,13 @@ class Settings(BaseModel):
     OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "qwen2.5-coder:1.5b")
     OLLAMA_EMBED_MODEL: str = os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text")
     
+    # Optional Cloud AI Fallback (for online hosting on Render/Vercel)
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "qwen-2.5-coder-32b")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    
     # Offline Voice
     WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "base")
     WHISPER_CPP_PATH: str = os.getenv("WHISPER_CPP_PATH", "")

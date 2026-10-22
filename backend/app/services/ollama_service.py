@@ -43,13 +43,31 @@ class OllamaService:
                         "message": f"Ollama returned HTTP {res.status_code}"
                     }
         except httpx.ConnectError:
+            if settings.GROQ_API_KEY:
+                return {
+                    "status": "ready",
+                    "daemon_running": True,
+                    "models": [settings.GROQ_MODEL],
+                    "active_model": f"Groq Cloud ({settings.GROQ_MODEL})",
+                    "model_ready": True,
+                    "message": "Connected via Groq Cloud AI inference."
+                }
+            if settings.OPENAI_API_KEY:
+                return {
+                    "status": "ready",
+                    "daemon_running": True,
+                    "models": [settings.OPENAI_MODEL],
+                    "active_model": f"OpenAI Cloud ({settings.OPENAI_MODEL})",
+                    "model_ready": True,
+                    "message": "Connected via OpenAI Cloud inference."
+                }
             return {
                 "status": "unavailable",
                 "daemon_running": False,
                 "models": [],
                 "active_model": self.default_model,
                 "model_ready": False,
-                "message": "Local Ollama service is not running on port 11434."
+                "message": "Local Ollama service is not running on port 11434 (or set GROQ_API_KEY for cloud inference)."
             }
         except Exception as e:
             return {
@@ -62,7 +80,7 @@ class OllamaService:
             }
 
     def generate(self, prompt: str, model: Optional[str] = None, system: Optional[str] = None, timeout: float = 90.0) -> str:
-        """Execute non-streaming inference against the local Ollama instance."""
+        """Execute inference against local Ollama, falling back to cloud LLM if configured."""
         target_model = model or self.default_model
         payload = {
             "model": target_model,
@@ -86,13 +104,65 @@ class OllamaService:
                     raise RuntimeError(f"Model '{target_model}' is not installed locally in Ollama.")
                 else:
                     raise RuntimeError(f"Ollama generation failed with HTTP {res.status_code}: {res.text}")
-        except httpx.ConnectError:
-            raise RuntimeError("Cannot connect to local Ollama service. Ensure Ollama is running.")
+        except (httpx.ConnectError, httpx.ConnectTimeout):
+            # Fallback to free Groq or OpenAI API if configured (e.g. deployed on Render)
+            if settings.GROQ_API_KEY:
+                return self._generate_groq(prompt, system, timeout)
+            if settings.OPENAI_API_KEY:
+                return self._generate_openai(prompt, system, timeout)
+            raise RuntimeError("Cannot connect to local Ollama service. Ensure Ollama is running or configure GROQ_API_KEY.")
         except httpx.ReadTimeout:
             raise RuntimeError(f"Local AI inference timed out after {timeout} seconds.")
         except Exception as e:
             logger.error(f"Ollama generation error: {e}")
             raise
+
+    def _generate_groq(self, prompt: str, system: Optional[str] = None, timeout: float = 60.0) -> str:
+        """Cloud fallback using Groq OpenAI-compatible fast API."""
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        headers = {
+            "Authorization": f"Bearer {settings.GROQ_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": settings.GROQ_MODEL,
+            "messages": messages,
+            "temperature": 0.2,
+            "top_p": 0.9
+        }
+        with httpx.Client(timeout=timeout) as client:
+            res = client.post("https://api.groq.com/openai/v1/chat/completions", json=payload, headers=headers)
+            if res.status_code == 200:
+                data = res.json()
+                return data["choices"][0]["message"]["content"]
+            raise RuntimeError(f"Groq API error ({res.status_code}): {res.text}")
+
+    def _generate_openai(self, prompt: str, system: Optional[str] = None, timeout: float = 60.0) -> str:
+        """Cloud fallback using OpenAI or compatible API."""
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        headers = {
+            "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": settings.OPENAI_MODEL,
+            "messages": messages,
+            "temperature": 0.2
+        }
+        with httpx.Client(timeout=timeout) as client:
+            res = client.post(f"{settings.OPENAI_BASE_URL.rstrip('/')}/chat/completions", json=payload, headers=headers)
+            if res.status_code == 200:
+                data = res.json()
+                return data["choices"][0]["message"]["content"]
+            raise RuntimeError(f"OpenAI API error ({res.status_code}): {res.text}")
 
     def generate_stream(self, prompt: str, model: Optional[str] = None, system: Optional[str] = None) -> Generator[str, None, None]:
         """Stream generated tokens from Ollama."""
