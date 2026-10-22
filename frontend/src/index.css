@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-canvas: #090d16;
+    --bg-primary: #090d16;
+    --bg-sidebar: rgba(15, 22, 35, 0.82);
+    --bg-secondary: rgba(15, 22, 35, 0.82);
+    --bg-header: rgba(15, 22, 35, 0.85);
+    --bg-surface: rgba(24, 32, 50, 0.7);
+    --bg-surface-elevated: rgba(30, 42, 65, 0.85);
+    --bg-card: rgba(21, 29, 46, 0.6);
+    --bg-card-hover: rgba(33, 46, 72, 0.65);
+    --bg-card-active: rgba(10, 132, 255, 0.16);
+    
+    --border: rgba(255, 255, 255, 0.1);
+    --border-subtle: rgba(255, 255, 255, 0.07);
+    --border-card: rgba(255, 255, 255, 0.1);
+    --border-card-hover: rgba(255, 255, 255, 0.16);
+    --border-focus: rgba(10, 132, 255, 0.65);
+    
+    --accent: #0a84ff;
+    --accent-mac: #0a84ff;
+    --accent-mac-hover: #0071e3;
+    --accent-glow: rgba(10, 132, 255, 0.28);
+    --accent-subtle: rgba(10, 132, 255, 0.12);
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-tertiary: #64748b;
+    --text-muted: #475569;
+
+    --mac-red: #ff5f57;
+    --mac-yellow: #febc2e;
+    --mac-green: #28c840;
+
+    --glass-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.07) inset;
+    --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .light {
+    --bg-canvas: #f2f3f7;
+    --bg-sidebar: rgba(243, 244, 248, 0.88);
+    --bg-header: rgba(248, 249, 252, 0.9);
+    --bg-surface: rgba(255, 255, 255, 0.8);
+    --bg-surface-elevated: #ffffff;
+    --bg-card: rgba(255, 255, 255, 0.72);
+    --bg-card-hover: rgba(240, 243, 249, 0.95);
+    --bg-card-active: rgba(0, 122, 255, 0.1);
+    
+    --border-subtle: rgba(0, 0, 0, 0.06);
+    --border-card: rgba(0, 0, 0, 0.08);
+    --border-card-hover: rgba(0, 0, 0, 0.14);
+    --border-focus: rgba(0, 122, 255, 0.5);
+    
+    --accent-mac: #007aff;
+    --accent-mac-hover: #0062cc;
+    --accent-glow: rgba(0, 122, 255, 0.2);
+    --accent-subtle: rgba(0, 122, 255, 0.08);
+    
+    --text-primary: #1d1d1f;
+    --text-secondary: #515154;
+    --text-tertiary: #86868b;
+    --text-muted: #a1a1a6;
+
+    --mac-red: #ff5f57;
+    --mac-yellow: #febc2e;
+    --mac-green: #28c840;
+
+    --glass-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05) inset;
+    --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+  }
+
+  body {
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    user-select: none;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.011em;
+  }
+}
+
+/* macOS Frosted Glass Materials */
+.mac-acrylic {
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+}
+
+.mac-window-shadow {
+  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--border-card);
+}
+
+.mac-panel-shadow {
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.35);
+}
+
+.mac-glow {
+  box-shadow: 0 0 20px -2px var(--accent-glow);
+}
+
+.mac-inset-highlight {
+  box-shadow: var(--glass-highlight);
+}
+
+/* Micro-interaction transitions */
+.mac-transition {
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Interactive macOS button styling */
+.mac-btn {
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mac-btn:active {
+  transform: scale(0.97);
+}
+
+/* macOS segmented control */
+.mac-segmented {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  padding: 3px;
+  display: inline-flex;
+  gap: 2px;
+}
+
+.light .mac-segmented {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Crisp ultra-thin macOS scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Typography code styling */
+.code-font {
+  font-family: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-feature-settings: "calt" 1;
+}
+
+.display-font {
+  font-family: 'Outfit', -apple-system, sans-serif;
+}
+
+/* Shimmer animation for AI generation */
+@keyframes mac-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.ai-shimmer {
+  background: linear-gradient(90deg, rgba(10, 132, 255, 0.05) 0%, rgba(10, 132, 255, 0.22) 50%, rgba(10, 132, 255, 0.05) 100%);
+  background-size: 200% 100%;
+  animation: mac-shimmer 2.2s infinite ease-in-out;
+}
+

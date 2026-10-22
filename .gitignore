@@ -1,0 +1,87 @@
+# ==========================================
+# IntelliNote AI / Nullbook — Git Ignore
+# ==========================================
+
+# Environment variables & secrets (keep .env.example only)
+.env
+.env.*
+!.env.example
+
+# Node.js dependencies & logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Python environments & caches
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing & Pytest
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Databases & local user note storage
+*.db
+*.sqlite
+*.sqlite3
+backend/data/*.db
+backend/data/backups/*
+backend/data/exports/*
+!backend/data/.gitkeep
+
+# Frontend build outputs
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+
+# Audio recording scratch files
+*.wav
+*.mp3
+*.ogg
+*.m4a
+
+# OS metadata & Editor folders
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

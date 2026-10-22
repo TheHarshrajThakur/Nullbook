@@ -1,0 +1,56 @@
+{
+  "name": "intellinote-ai",
+  "version": "1.0.0",
+  "description": "Offline Intelligent Notepad and Code Generator Windows Desktop Application",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "npm --prefix frontend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": ".\\.venv\\Scripts\\python.exe backend/run_server.py",
+    "build:frontend": "npm --prefix frontend run build",
+    "package:win": "npm run build:frontend && electron-builder --win nsis",
+    "pack": "electron-builder --dir"
+  },
+  "keywords": [
+    "notepad",
+    "code-generator",
+    "offline-ai",
+    "ollama",
+    "qwen",
+    "whisper",
+    "electron"
+  ],
+  "author": "IntelliNote AI Team",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.intellinote.ai",
+    "productName": "IntelliNote AI",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "frontend/dist/**/*",
+      "backend/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "frontend/public/favicon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "IntelliNote AI"
+    }
+  }
+}
