@@ -14,7 +14,26 @@ function getPythonExecutable() {
   return process.platform === 'win32' ? 'python.exe' : 'python3';
 }
 
-function startPythonBackend() {
+function isBackendRunning() {
+  return new Promise((resolve) => {
+    const req = http.get('http://127.0.0.1:8765/', (res) => {
+      resolve(true);
+    });
+    req.on('error', () => resolve(false));
+    req.setTimeout(600, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+}
+
+async function startPythonBackend() {
+  const isAlreadyUp = await isBackendRunning();
+  if (isAlreadyUp) {
+    console.log('[PythonManager] Backend is already active on http://127.0.0.1:8765');
+    return null;
+  }
+
   const pythonBin = getPythonExecutable();
   const scriptPath = path.join(__dirname, '..', 'backend', 'run_server.py');
   const cwd = path.join(__dirname, '..', 'backend');
