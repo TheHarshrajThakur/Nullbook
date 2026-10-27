@@ -11,6 +11,7 @@ import { StatusBar } from './components/StatusBar';
 import { Note, Category, SystemStatus, SaveStatus, Theme } from './types';
 import { api } from './services/api';
 import { FileText, Edit3, Code2, Plus, Mic } from 'lucide-react';
+import { PanelSplitter } from './components/PanelSplitter';
 
 export function App() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -25,6 +26,29 @@ export function App() {
   const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [mobileTab, setMobileTab] = useState<'notes' | 'editor' | 'code'>('editor');
+
+  // Resizable panel widths (persisted in localStorage like VS Code)
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('nullbook_sidebar_width');
+      return saved ? Math.max(160, Math.min(parseInt(saved, 10), 500)) : 280;
+    } catch {
+      return 280;
+    }
+  });
+
+  const [codePanelWidth, setCodePanelWidth] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('nullbook_codepanel_width');
+      return saved ? Math.max(260, Math.min(parseInt(saved, 10), 1200)) : 520;
+    } catch {
+      return 520;
+    }
+  });
+
+  const [isResizing, setIsResizing] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
+  const workspaceRef = useRef<HTMLDivElement>(null);
 
   // Modals state
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
@@ -66,6 +90,78 @@ export function App() {
       document.documentElement.classList.remove('light');
     }
   }, [theme]);
+
+  // Window resize observer to adapt panel widths smoothly
+  useEffect(() => {
+    const handleResize = () => {
+      const desktop = window.innerWidth >= 1024;
+      setIsDesktop(desktop);
+      if (workspaceRef.current) {
+        const rect = workspaceRef.current.getBoundingClientRect();
+        const currentSidebarW = sidebarCollapsed ? 56 : sidebarWidth;
+        const maxCodeW = rect.width - currentSidebarW - 280;
+        if (maxCodeW > 260) {
+          setCodePanelWidth(prev => Math.min(prev, maxCodeW));
+        }
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [sidebarCollapsed, sidebarWidth]);
+
+  // Handle Sidebar border dragging (VS Code style)
+  const handleSidebarDrag = useCallback((e: { clientX: number }) => {
+    if (!workspaceRef.current) return;
+    const rect = workspaceRef.current.getBoundingClientRect();
+    const rawWidth = e.clientX - rect.left;
+
+    // Auto-collapse if dragged very small (< 85px)
+    if (rawWidth < 85) {
+      if (!sidebarCollapsed) setSidebarCollapsed(true);
+    } else {
+      if (sidebarCollapsed) setSidebarCollapsed(false);
+      const maxSidebar = Math.min(500, Math.floor(rect.width * 0.42));
+      const clamped = Math.max(170, Math.min(rawWidth, maxSidebar));
+      setSidebarWidth(clamped);
+      try {
+        localStorage.setItem('nullbook_sidebar_width', String(clamped));
+      } catch {}
+    }
+  }, [sidebarCollapsed]);
+
+  const handleResetSidebar = useCallback(() => {
+    setSidebarCollapsed(false);
+    setSidebarWidth(280);
+    try {
+      localStorage.setItem('nullbook_sidebar_width', '280');
+    } catch {}
+  }, []);
+
+  // Handle CodePanel border dragging (VS Code style)
+  const handleCodePanelDrag = useCallback((e: { clientX: number }) => {
+    if (!workspaceRef.current) return;
+    const rect = workspaceRef.current.getBoundingClientRect();
+    const rawWidth = rect.right - e.clientX;
+    const currentSidebarW = sidebarCollapsed ? 56 : sidebarWidth;
+    const maxCodeW = rect.width - currentSidebarW - 280;
+    const clamped = Math.max(260, Math.min(rawWidth, Math.max(260, maxCodeW)));
+    setCodePanelWidth(clamped);
+    try {
+      localStorage.setItem('nullbook_codepanel_width', String(clamped));
+    } catch {}
+  }, [sidebarCollapsed, sidebarWidth]);
+
+  const handleResetCodePanel = useCallback(() => {
+    if (!workspaceRef.current) return;
+    const rect = workspaceRef.current.getBoundingClientRect();
+    const currentSidebarW = sidebarCollapsed ? 56 : sidebarWidth;
+    const available = rect.width - currentSidebarW;
+    const half = Math.max(280, Math.round(available / 2));
+    setCodePanelWidth(half);
+    try {
+      localStorage.setItem('nullbook_codepanel_width', String(half));
+    } catch {}
+  }, [sidebarCollapsed, sidebarWidth]);
 
   // Debounced Auto-Save
   const triggerAutoSave = (updatedNote: Note) => {
@@ -274,10 +370,16 @@ export function App() {
         onOpenMobileNotes={() => setMobileTab('notes')}
       />
 
-      {/* Main Workspace Canvas */}
-      <div className="flex-1 flex overflow-hidden relative">
+      {/* Main Workspace Canvas with VS Code Style Draggable Border Resizing */}
+      <div className="flex-1 flex overflow-hidden relative" ref={workspaceRef}>
         {/* Left Sidebar */}
-        <div className={`${mobileTab === 'notes' ? 'flex' : 'hidden'} lg:flex w-full lg:w-auto h-full shrink-0`}>
+        <div
+          className={`${mobileTab === 'notes' ? 'flex' : 'hidden'} lg:flex w-full lg:w-auto h-full shrink-0`}
+          style={{
+            width: isDesktop ? (sidebarCollapsed ? 56 : sidebarWidth) : '100%',
+            transition: isResizing ? 'none' : undefined
+          }}
+        >
           <Sidebar
             notes={notes}
             activeNoteId={activeNote?.id || null}
@@ -301,8 +403,19 @@ export function App() {
             collapsed={sidebarCollapsed}
             onToggleCollapse={() => setSidebarCollapsed(c => !c)}
             onMobileSelectNote={() => setMobileTab('editor')}
+            isResizing={isResizing}
           />
         </div>
+
+        {/* VS Code Style Splitter 1: Sidebar <-> Editor Area */}
+        <PanelSplitter
+          direction="col"
+          onDragStart={() => setIsResizing(true)}
+          onDragEnd={() => setIsResizing(false)}
+          onDrag={handleSidebarDrag}
+          onDoubleClick={handleResetSidebar}
+          title="Drag border to resize sidebar • Double-click to reset (280px)"
+        />
 
         {/* Central Writing Area */}
         <div className={`${mobileTab === 'editor' ? 'flex' : 'hidden'} lg:flex flex-1 h-full min-w-0`}>
@@ -317,8 +430,24 @@ export function App() {
           />
         </div>
 
+        {/* VS Code Style Splitter 2: Editor Area <-> Code Output Panel */}
+        <PanelSplitter
+          direction="col"
+          onDragStart={() => setIsResizing(true)}
+          onDragEnd={() => setIsResizing(false)}
+          onDrag={handleCodePanelDrag}
+          onDoubleClick={handleResetCodePanel}
+          title="Drag border to resize code panel • Double-click to balance (50%)"
+        />
+
         {/* Right Code Output Panel */}
-        <div className={`${mobileTab === 'code' ? 'flex' : 'hidden'} lg:flex w-full lg:w-1/2 h-full min-w-0`}>
+        <div
+          className={`${mobileTab === 'code' ? 'flex' : 'hidden'} lg:flex w-full lg:w-auto h-full min-w-0 shrink-0`}
+          style={{
+            width: isDesktop ? codePanelWidth : '100%',
+            transition: isResizing ? 'none' : undefined
+          }}
+        >
           <CodePanel
             note={activeNote}
             onUpdateCode={handleUpdateCode}
@@ -341,12 +470,21 @@ export function App() {
         <button
           onClick={() => setMobileTab('notes')}
           className={`flex flex-col items-center justify-center flex-1 py-1 mac-btn transition ${
-            mobileTab === 'notes' ? 'text-blue-400 font-semibold' : 'text-gray-400 hover:text-gray-200'
+            mobileTab === 'notes' ? 'font-semibold' : 'hover:opacity-80'
           }`}
+          style={{
+            color: mobileTab === 'notes' ? 'var(--accent-mac)' : 'var(--text-secondary)'
+          }}
         >
           <div className="relative">
             <FileText className="w-5 h-5" />
-            <span className="absolute -top-1 -right-2 text-[9px] px-1 rounded-full bg-blue-500/20 text-blue-300 font-mono">
+            <span
+              className="absolute -top-1 -right-2 text-[9px] px-1 rounded-full font-mono"
+              style={{
+                backgroundColor: 'rgba(2, 132, 199, 0.15)',
+                color: 'var(--accent-mac)'
+              }}
+            >
               {notes.length}
             </span>
           </div>
@@ -356,8 +494,11 @@ export function App() {
         <button
           onClick={() => setMobileTab('editor')}
           className={`flex flex-col items-center justify-center flex-1 py-1 mac-btn transition ${
-            mobileTab === 'editor' ? 'text-blue-400 font-semibold' : 'text-gray-400 hover:text-gray-200'
+            mobileTab === 'editor' ? 'font-semibold' : 'hover:opacity-80'
           }`}
+          style={{
+            color: mobileTab === 'editor' ? 'var(--accent-mac)' : 'var(--text-secondary)'
+          }}
         >
           <Edit3 className="w-5 h-5" />
           <span className="text-[10px] mt-0.5 tracking-tight">Editor</span>
@@ -378,13 +519,16 @@ export function App() {
         <button
           onClick={() => setMobileTab('code')}
           className={`flex flex-col items-center justify-center flex-1 py-1 mac-btn transition ${
-            mobileTab === 'code' ? 'text-blue-400 font-semibold' : 'text-gray-400 hover:text-gray-200'
+            mobileTab === 'code' ? 'font-semibold' : 'hover:opacity-80'
           }`}
+          style={{
+            color: mobileTab === 'code' ? 'var(--accent-mac)' : 'var(--text-secondary)'
+          }}
         >
           <div className="relative">
             <Code2 className="w-5 h-5" />
             {activeNote?.generated_code && (
-              <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+              <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
             )}
           </div>
           <span className="text-[10px] mt-0.5 tracking-tight">Code</span>
@@ -392,10 +536,11 @@ export function App() {
 
         <button
           onClick={() => setVoiceModalOpen(true)}
-          className="flex flex-col items-center justify-center flex-1 py-1 mac-btn text-gray-400 hover:text-gray-200 transition"
+          className="flex flex-col items-center justify-center flex-1 py-1 mac-btn transition hover:opacity-80"
+          style={{ color: 'var(--text-secondary)' }}
           title="Voice Assistant"
         >
-          <Mic className="w-5 h-5 text-indigo-400" />
+          <Mic className="w-5 h-5 text-indigo-500" />
           <span className="text-[10px] mt-0.5 tracking-tight">Voice</span>
         </button>
       </nav>

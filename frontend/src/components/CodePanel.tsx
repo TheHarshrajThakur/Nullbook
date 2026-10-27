@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Note, ValidationResult, ExecutionResult } from '../types';
 import { api } from '../services/api';
+import { PanelSplitter } from './PanelSplitter';
 
 interface CodePanelProps {
   note: Note | null;
@@ -36,6 +37,7 @@ export const CodePanel: React.FC<CodePanelProps> = ({
   const [executing, setExecuting] = useState(false);
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
   const [showTerminal, setShowTerminal] = useState(false);
+  const [terminalHeight, setTerminalHeight] = useState<number>(200);
   const [showExplanation, setShowExplanation] = useState(true);
 
   if (!note) return null;
@@ -131,10 +133,9 @@ export const CodePanel: React.FC<CodePanelProps> = ({
 
   return (
     <div
-      className="w-full lg:w-1/2 flex flex-col h-full overflow-hidden select-none relative z-10"
+      className="w-full flex flex-col h-full overflow-hidden select-none relative z-10"
       style={{
-        backgroundColor: '#070a11',
-        borderLeft: '1px solid var(--border-subtle)'
+        backgroundColor: 'var(--bg-code)'
       }}
     >
       {/* Top Controls Bar */}
@@ -150,7 +151,7 @@ export const CodePanel: React.FC<CodePanelProps> = ({
           <div
             className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg border mac-transition"
             style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.04)',
+              backgroundColor: 'var(--bg-control)',
               borderColor: 'var(--border-card)'
             }}
           >
@@ -160,10 +161,11 @@ export const CodePanel: React.FC<CodePanelProps> = ({
             <select
               value={currentLang}
               onChange={e => onUpdateCode(note.generated_code, e.target.value)}
-              className="bg-transparent text-gray-200 text-xs font-semibold outline-none cursor-pointer pr-1"
+              className="bg-transparent text-xs font-semibold outline-none cursor-pointer pr-1"
+              style={{ color: 'var(--text-primary)' }}
             >
               {SUPPORTED_LANGUAGES.map(lang => (
-                <option key={lang.id} value={lang.id} className="bg-[#0f172a] text-gray-200">
+                <option key={lang.id} value={lang.id} style={{ backgroundColor: 'var(--bg-surface-elevated)', color: 'var(--text-primary)' }}>
                   {lang.name} (.{lang.ext})
                 </option>
               ))}
@@ -180,12 +182,12 @@ export const CodePanel: React.FC<CodePanelProps> = ({
           <button
             onClick={onOpenRevisions}
             title="View Code Revision History"
-            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/[0.06] text-gray-300 hover:text-white text-xs font-medium border mac-btn transition"
-            style={{ borderColor: 'var(--border-card)' }}
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-[var(--bg-control-hover)] text-xs font-medium border mac-btn transition"
+            style={{ borderColor: 'var(--border-card)', color: 'var(--text-secondary)' }}
           >
-            <History className="w-3.5 h-3.5 text-blue-400" />
+            <History className="w-3.5 h-3.5 text-blue-500" />
             <span className="hidden sm:inline">Revisions</span>
-            <span className="text-[10px] px-1 rounded bg-blue-500/20 text-blue-300 font-mono">
+            <span className="text-[10px] px-1 rounded bg-blue-500/15 text-blue-600 dark:text-blue-300 font-mono">
               {note.revisions_count || 0}
             </span>
           </button>
@@ -195,9 +197,10 @@ export const CodePanel: React.FC<CodePanelProps> = ({
             onClick={handleCopy}
             disabled={!note.generated_code}
             title="Copy Code to Clipboard"
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] text-gray-300 hover:text-white mac-btn transition disabled:opacity-30"
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-control-hover)] mac-btn transition disabled:opacity-30"
+            style={{ color: 'var(--text-secondary)' }}
           >
-            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+            {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
           </button>
 
           {/* Export Dropdown */}
@@ -205,7 +208,8 @@ export const CodePanel: React.FC<CodePanelProps> = ({
             <button
               disabled={!note.generated_code}
               title="Export Source File"
-              className="p-1.5 rounded-lg hover:bg-white/[0.06] text-gray-300 hover:text-white mac-btn transition disabled:opacity-30"
+              className="p-1.5 rounded-lg hover:bg-[var(--bg-control-hover)] mac-btn transition disabled:opacity-30"
+              style={{ color: 'var(--text-secondary)' }}
             >
               <Download className="w-4 h-4" />
             </button>
@@ -218,19 +222,22 @@ export const CodePanel: React.FC<CodePanelProps> = ({
             >
               <button
                 onClick={() => handleExport(SUPPORTED_LANGUAGES.find(l => l.id === currentLang)?.ext || 'txt')}
-                className="w-full text-left px-3 py-1.5 text-xs text-gray-200 hover:bg-blue-600 rounded-lg transition font-medium"
+                className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-600 hover:text-white rounded-lg transition font-medium"
+                style={{ color: 'var(--text-primary)' }}
               >
                 .{SUPPORTED_LANGUAGES.find(l => l.id === currentLang)?.ext || 'txt'} File
               </button>
               <button
                 onClick={() => handleExport('md')}
-                className="w-full text-left px-3 py-1.5 text-xs text-gray-200 hover:bg-blue-600 rounded-lg transition font-medium"
+                className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-600 hover:text-white rounded-lg transition font-medium"
+                style={{ color: 'var(--text-primary)' }}
               >
                 Markdown (.md)
               </button>
               <button
                 onClick={() => handleExport('txt')}
-                className="w-full text-left px-3 py-1.5 text-xs text-gray-200 hover:bg-blue-600 rounded-lg transition font-medium"
+                className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-600 hover:text-white rounded-lg transition font-medium"
+                style={{ color: 'var(--text-primary)' }}
               >
                 Plain Text (.txt)
               </button>
@@ -239,12 +246,22 @@ export const CodePanel: React.FC<CodePanelProps> = ({
         </div>
       </div>
 
-      {/* Editor Main Canvas (Dark IDE Background) */}
-      <div className="flex-1 flex flex-col min-h-0 bg-[#05080f] relative overflow-hidden">
+      {/* Editor Main Canvas (Dark or Light Theme Compatible) */}
+      <div
+        className="flex-1 flex flex-col min-h-0 relative overflow-hidden"
+        style={{ backgroundColor: 'var(--bg-code-editor)' }}
+      >
         {note.generated_code ? (
           <div className="flex-1 flex overflow-hidden">
             {/* Line Numbers */}
-            <div className="w-12 py-3 pr-3 text-right text-xs text-gray-600 font-mono select-none border-r border-white/[0.05] bg-[#04060c]">
+            <div
+              className="w-12 py-3 pr-3 text-right text-xs font-mono select-none border-r"
+              style={{
+                backgroundColor: 'var(--bg-code-gutter)',
+                borderColor: 'var(--border-subtle)',
+                color: 'var(--text-code-gutter)'
+              }}
+            >
               {codeLines.map((_, i) => (
                 <div key={i} className="leading-6">{i + 1}</div>
               ))}
@@ -256,17 +273,18 @@ export const CodePanel: React.FC<CodePanelProps> = ({
                 value={note.generated_code}
                 onChange={e => onUpdateCode(e.target.value, currentLang)}
                 spellCheck={false}
-                className="w-full h-full bg-transparent text-xs text-blue-50 font-mono leading-6 outline-none resize-none code-font whitespace-pre selection:bg-blue-600/35"
+                className="w-full h-full bg-transparent text-xs font-mono leading-6 outline-none resize-none code-font whitespace-pre selection:bg-blue-600/25"
+                style={{ color: 'var(--text-code)' }}
               />
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-gray-400">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-3 shadow-sm">
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center" style={{ color: 'var(--text-muted)' }}>
+            <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 mb-3 shadow-sm">
               <FileCode className="w-7 h-7" />
             </div>
-            <p className="text-sm font-semibold text-white tracking-tight mb-1">No Code Generated Yet</p>
-            <p className="text-xs text-gray-400 max-w-xs mb-4 leading-relaxed">
+            <p className="text-sm font-semibold tracking-tight mb-1" style={{ color: 'var(--text-primary)' }}>No Code Generated Yet</p>
+            <p className="text-xs max-w-xs mb-4 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               Draft your requirements in the writing canvas and let Ollama convert it to working {currentLang.toUpperCase()} code.
             </p>
             <button
@@ -303,43 +321,50 @@ export const CodePanel: React.FC<CodePanelProps> = ({
         >
           <div
             onClick={() => setShowExplanation(!showExplanation)}
-            className="p-2.5 px-3 flex items-center justify-between text-gray-300 hover:text-white cursor-pointer font-medium select-none"
+            className="p-2.5 px-3 flex items-center justify-between cursor-pointer font-medium select-none hover:bg-[var(--bg-control-hover)]"
+            style={{ color: 'var(--text-primary)' }}
           >
             <div className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+              <Sparkles className="w-3.5 h-3.5 text-blue-500" />
               <span className="font-semibold text-xs tracking-tight">AI Solution Architecture & Explanation</span>
             </div>
             {showExplanation ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
           </div>
           {showExplanation && (
-            <div className="px-3.5 pb-3 text-gray-300 text-[11px] leading-relaxed whitespace-pre-wrap font-sans">
+            <div className="px-3.5 pb-3 text-[11px] leading-relaxed whitespace-pre-wrap font-sans" style={{ color: 'var(--text-secondary)' }}>
               {note.explanation}
             </div>
           )}
         </div>
       )}
 
-      {/* macOS Terminal Drawer for Safe Execution */}
+      {/* Terminal Drawer for Safe Execution (Vertically Resizable) */}
       {showTerminal && (
         <div
-          className="border-t font-mono text-xs max-h-52 overflow-y-auto shadow-2xl relative"
+          className="flex flex-col font-mono text-xs shadow-2xl relative shrink-0"
           style={{
-            backgroundColor: '#0a0d14',
-            borderColor: 'var(--border-subtle)'
+            height: `${terminalHeight}px`,
+            backgroundColor: '#0a0d14'
           }}
         >
-          {/* macOS Terminal Header with Traffic Lights */}
+          {/* Vertical Resize Splitter for Terminal */}
+          <PanelSplitter
+            direction="row"
+            onDrag={({ deltaY }) => {
+              setTerminalHeight(prev => Math.max(120, Math.min(prev - deltaY, 480)));
+            }}
+            onDoubleClick={() => setTerminalHeight(200)}
+            title="Drag to resize terminal • Double click to reset"
+          />
+
+          {/* Terminal Drawer Header */}
           <div
             className="p-2 px-3 border-b flex items-center justify-between text-[11px] text-gray-400 select-none sticky top-0 bg-[#0d111a]"
             style={{ borderColor: 'rgba(255, 255, 255, 0.08)' }}
           >
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
-              </div>
-              <span className="text-[10px] font-semibold text-gray-300 ml-1">Terminal — Isolated Sandbox</span>
+              <Terminal className="w-3.5 h-3.5 text-blue-400" />
+              <span className="text-[10px] font-semibold text-gray-300">Terminal — Isolated Sandbox</span>
             </div>
 
             {executionResult && (
@@ -362,7 +387,7 @@ export const CodePanel: React.FC<CodePanelProps> = ({
           </div>
 
           {/* Terminal Console Output */}
-          <div className="p-3 text-[11px] font-mono space-y-1.5 bg-[#070a10]">
+          <div className="flex-1 overflow-y-auto p-3 text-[11px] font-mono space-y-1.5 bg-[#070a10]">
             <div className="text-gray-500 text-[10px]">
               ➜ sandbox-env/{currentLang} execution:
             </div>
@@ -401,10 +426,14 @@ export const CodePanel: React.FC<CodePanelProps> = ({
           <button
             onClick={handleValidate}
             disabled={validating || !note.generated_code}
-            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-40 text-gray-200 text-xs font-semibold border mac-btn transition"
-            style={{ borderColor: 'var(--border-card)' }}
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 rounded-lg hover:bg-[var(--bg-control-hover)] disabled:opacity-40 text-xs font-semibold border mac-btn transition"
+            style={{
+              backgroundColor: 'var(--bg-control)',
+              borderColor: 'var(--border-card)',
+              color: 'var(--text-primary)'
+            }}
           >
-            <CheckCircle2 className={`w-3.5 h-3.5 ${validating ? 'animate-spin text-blue-400' : 'text-blue-400'}`} />
+            <CheckCircle2 className={`w-3.5 h-3.5 ${validating ? 'animate-spin text-blue-500' : 'text-blue-500'}`} />
             <span className="hidden sm:inline">Validate Syntax</span>
             <span className="sm:hidden">Validate</span>
           </button>
@@ -427,7 +456,7 @@ export const CodePanel: React.FC<CodePanelProps> = ({
           onClick={onGenerateCode}
           disabled={isGenerating || !note.content.trim()}
           title="Regenerate code"
-          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-semibold border border-blue-500/30 mac-btn transition disabled:opacity-40"
+          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold border border-blue-500/30 mac-btn transition disabled:opacity-40"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
           <span className="hidden sm:inline">Regenerate</span>

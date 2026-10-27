@@ -23,6 +23,7 @@ interface SidebarProps {
   collapsed: boolean;
   onToggleCollapse: () => void;
   onMobileSelectNote?: () => void;
+  isResizing?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -41,7 +42,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenSettings,
   collapsed,
   onToggleCollapse,
-  onMobileSelectNote
+  onMobileSelectNote,
+  isResizing = false
 }) => {
   const [categoriesOpen, setCategoriesOpen] = React.useState(true);
   const [tagsOpen, setTagsOpen] = React.useState(true);
@@ -82,8 +84,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`h-full flex flex-col border-r mac-transition mac-acrylic select-none z-20 relative mac-inset-highlight ${
-        collapsed ? 'w-full lg:w-14' : 'w-full lg:w-72'
+      className={`h-full w-full flex flex-col border-r lg:border-r-0 mac-acrylic select-none z-20 relative mac-inset-highlight ${
+        isResizing ? '' : 'mac-transition'
       }`}
       style={{
         backgroundColor: 'var(--bg-sidebar)',
@@ -98,17 +100,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Sparkles className="w-3.5 h-3.5" />
             </div>
             <div className="text-left">
-              <h2 className="text-xs font-semibold text-white/95 leading-none tracking-tight">
+              <h2 className="text-xs font-semibold leading-none tracking-tight" style={{ color: 'var(--text-primary)' }}>
                 Workspace
               </h2>
-              <span className="text-[10px] text-gray-400 font-medium">Offline Library</span>
+              <span className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>Offline Library</span>
             </div>
           </div>
         )}
         <button
           onClick={onToggleCollapse}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.06] mac-btn transition"
+          className="p-1.5 rounded-lg mac-btn transition hover:bg-[var(--bg-control-hover)]"
+          style={{ color: 'var(--text-secondary)' }}
         >
           <Layers className="w-3.5 h-3.5" />
         </button>
@@ -137,14 +140,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }}
             className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg mac-transition ${
               !selectedCategory && !selectedTag && !filterFavorites
-                ? 'bg-blue-600/15 text-blue-400 font-semibold shadow-2xs border border-blue-500/20'
-                : 'text-gray-300 hover:bg-white/[0.04]'
+                ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 font-semibold shadow-2xs border border-blue-500/20'
+                : 'hover:bg-[var(--bg-control-hover)]'
             }`}
+            style={{
+              color: !selectedCategory && !selectedTag && !filterFavorites ? undefined : 'var(--text-secondary)'
+            }}
           >
-            <Clock className="w-3.5 h-3.5 text-blue-400" />
+            <Clock className="w-3.5 h-3.5 text-blue-500" />
             {!collapsed && <span className="flex-1 text-left">All Notes</span>}
             {!collapsed && (
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/[0.06] text-gray-400 font-mono">
+              <span
+                className="text-[10px] px-1.5 py-0.2 rounded-full font-mono"
+                style={{ backgroundColor: 'var(--bg-control)', color: 'var(--text-muted)' }}
+              >
                 {notes.length}
               </span>
             )}
@@ -154,14 +163,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={onToggleFilterFavorites}
             className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg mac-transition ${
               filterFavorites
-                ? 'bg-amber-500/15 text-amber-400 font-semibold shadow-2xs border border-amber-500/25'
-                : 'text-gray-300 hover:bg-white/[0.04]'
+                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold shadow-2xs border border-amber-500/25'
+                : 'hover:bg-[var(--bg-control-hover)]'
             }`}
+            style={{
+              color: filterFavorites ? undefined : 'var(--text-secondary)'
+            }}
           >
-            <Star className="w-3.5 h-3.5 text-amber-400" />
+            <Star className="w-3.5 h-3.5 text-amber-500" />
             {!collapsed && <span className="flex-1 text-left">Favorites</span>}
             {!collapsed && (
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/[0.06] text-gray-400 font-mono">
+              <span
+                className="text-[10px] px-1.5 py-0.2 rounded-full font-mono"
+                style={{ backgroundColor: 'var(--bg-control)', color: 'var(--text-muted)' }}
+              >
                 {notes.filter(n => n.is_favorite).length}
               </span>
             )}
@@ -171,10 +186,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Categories Section */}
         {!collapsed && (
           <div>
-            <div className="flex items-center justify-between px-2.5 py-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+            <div className="flex items-center justify-between px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
               <button
                 onClick={() => setCategoriesOpen(!categoriesOpen)}
-                className="flex items-center gap-1 hover:text-gray-200 transition"
+                className="flex items-center gap-1 hover:text-blue-500 transition"
               >
                 {categoriesOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
                 <span>Categories</span>
@@ -182,7 +197,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={onOpenCategoryManager}
                 title="Manage Categories"
-                className="hover:text-blue-400 p-0.5 rounded transition"
+                className="hover:text-blue-500 p-0.5 rounded transition"
               >
                 <FolderPlus className="w-3 h-3" />
               </button>
@@ -198,16 +213,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       onClick={() => onSelectCategory(isSelected ? null : cat.id)}
                       className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg mac-transition text-xs ${
                         isSelected
-                          ? 'bg-blue-600/15 text-blue-400 font-semibold border border-blue-500/20'
-                          : 'text-gray-300 hover:bg-white/[0.04]'
+                          ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 font-semibold border border-blue-500/20'
+                          : 'hover:bg-[var(--bg-control-hover)]'
                       }`}
+                      style={{
+                        color: isSelected ? undefined : 'var(--text-secondary)'
+                      }}
                     >
                       <span
                         className="w-2 h-2 rounded-full shrink-0 shadow-xs"
                         style={{ backgroundColor: cat.color || '#3b82f6' }}
                       />
                       <span className="flex-1 text-left truncate">{cat.name}</span>
-                      <span className="text-[10px] text-gray-500 font-mono">{cat.notes_count || 0}</span>
+                      <span className="text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>{cat.notes_count || 0}</span>
                     </button>
                   );
                 })}
@@ -219,10 +237,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Tags Section */}
         {!collapsed && allTags.length > 0 && (
           <div>
-            <div className="flex items-center justify-between px-2.5 py-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+            <div className="flex items-center justify-between px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
               <button
                 onClick={() => setTagsOpen(!tagsOpen)}
-                className="flex items-center gap-1 hover:text-gray-200 transition"
+                className="flex items-center gap-1 hover:text-blue-500 transition"
               >
                 {tagsOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
                 <span>Tags</span>
@@ -240,8 +258,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition ${
                         isSelected
                           ? 'bg-blue-600 text-white shadow-2xs'
-                          : 'bg-white/[0.05] text-gray-400 hover:text-white hover:bg-white/[0.08]'
+                          : 'hover:bg-[var(--bg-control-hover)]'
                       }`}
+                      style={{
+                        backgroundColor: isSelected ? undefined : 'var(--bg-control)',
+                        color: isSelected ? '#ffffff' : 'var(--text-secondary)'
+                      }}
                     >
                       #{tag}
                     </button>
@@ -255,12 +277,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Document History Note Cards (macOS Notes Style) */}
         {!collapsed && (
           <div className="pt-2 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
-            <div className="px-2.5 pb-1.5 flex items-center justify-between text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+            <div className="px-2.5 pb-1.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
               <span>Documents ({filteredNotes.length})</span>
             </div>
             <div className="space-y-1">
               {filteredNotes.length === 0 ? (
-                <div className="px-3 py-6 text-center text-xs text-gray-500 font-medium">
+                <div className="px-3 py-6 text-center text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
                   No notes match current filter
                 </div>
               ) : (
@@ -275,23 +297,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       }}
                       className={`group relative p-2.5 rounded-xl cursor-pointer mac-transition text-left border ${
                         isActive
-                          ? 'bg-blue-600/15 border-blue-500/40 text-white shadow-xs mac-inset-highlight'
-                          : 'border-transparent hover:bg-white/[0.04] text-gray-200'
+                          ? 'bg-blue-600/10 border-blue-500/40 shadow-xs'
+                          : 'border-transparent hover:bg-[var(--bg-control-hover)]'
                       }`}
+                      style={{
+                        backgroundColor: isActive ? undefined : 'var(--bg-card)'
+                      }}
                     >
                       <div className="flex items-start justify-between gap-1 mb-1">
-                        <span className={`font-semibold text-xs truncate flex-1 tracking-tight ${isActive ? 'text-white' : 'text-gray-200'}`}>
+                        <span
+                          className="font-semibold text-xs truncate flex-1 tracking-tight"
+                          style={{
+                            color: isActive ? 'var(--accent-mac)' : 'var(--text-primary)'
+                          }}
+                        >
                           {n.title || 'Untitled Note'}
                         </span>
                         <div className="flex items-center gap-1 shrink-0">
-                          {n.is_favorite && <Star className="w-3 h-3 text-amber-400 fill-amber-400" />}
-                          <span className="text-[9px] text-gray-500 font-mono">
+                          {n.is_favorite && <Star className="w-3 h-3 text-amber-500 fill-amber-500" />}
+                          <span className="text-[9px] font-mono" style={{ color: 'var(--text-muted)' }}>
                             {formatCardDate(n.updated_at)}
                           </span>
                         </div>
                       </div>
 
-                      <p className="text-[11px] text-gray-400 line-clamp-2 mb-2 leading-relaxed">
+                      <p className="text-[11px] line-clamp-2 mb-2 leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
                         {n.content || (n.generated_code ? `[Generated ${n.language} code]` : 'Empty note')}
                       </p>
 
@@ -309,7 +339,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           </span>
                         )}
                         {n.generated_code && (
-                          <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-md bg-indigo-500/15 text-indigo-300 font-mono border border-indigo-500/25">
+                          <span className="flex items-center gap-0.5 px-1.5 py-0.2 rounded-md bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 font-mono border border-indigo-500/25">
                             <Code className="w-2.5 h-2.5" />
                             {n.language}
                           </span>
@@ -329,9 +359,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={onOpenSettings}
           title="Settings & Local AI Models"
-          className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/[0.05] text-gray-400 hover:text-white mac-btn transition text-xs"
+          className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg mac-btn transition text-xs hover:bg-[var(--bg-control-hover)]"
+          style={{ color: 'var(--text-secondary)' }}
         >
-          <SettingsIcon className="w-3.5 h-3.5 text-gray-400" />
+          <SettingsIcon className="w-3.5 h-3.5" style={{ color: 'var(--text-secondary)' }} />
           {!collapsed && <span>Settings & Models</span>}
         </button>
       </div>

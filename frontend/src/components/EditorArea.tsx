@@ -74,12 +74,12 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
         className="flex-1 flex flex-col items-center justify-center p-8 text-center select-none"
         style={{ backgroundColor: 'var(--bg-canvas)' }}
       >
-        <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-4 shadow-sm">
+        <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 mb-4 shadow-sm">
           <FileText className="w-7 h-7" />
         </div>
-        <h2 className="text-sm font-semibold text-white tracking-tight mb-1">No Note Selected</h2>
-        <p className="text-xs text-gray-400 max-w-sm leading-relaxed">
-          Select a document from the left library or click <span className="text-blue-400 font-semibold">+ New Note</span> to start drafting.
+        <h2 className="text-sm font-semibold tracking-tight mb-1" style={{ color: 'var(--text-primary)' }}>No Note Selected</h2>
+        <p className="text-xs max-w-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+          Select a document from the left library or click <span className="text-blue-500 font-semibold">+ New Note</span> to start drafting.
         </p>
       </div>
     );
@@ -141,7 +141,7 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
 
   return (
     <div
-      className="flex-1 flex flex-col h-full border-r overflow-hidden select-none"
+      className="flex-1 flex flex-col h-full border-r lg:border-r-0 overflow-hidden select-none"
       style={{
         backgroundColor: 'var(--bg-canvas)',
         borderColor: 'var(--border-subtle)'
@@ -164,8 +164,11 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
               className={`px-2.5 sm:px-3 py-1 text-[10px] sm:text-[11px] font-semibold rounded-md capitalize transition ${
                 note.note_type === mode
                   ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-gray-400 hover:text-white'
+                  : 'hover:text-blue-500'
               }`}
+              style={{
+                color: note.note_type === mode ? '#ffffff' : 'var(--text-secondary)'
+              }}
             >
               {mode}
             </button>
@@ -174,15 +177,15 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
 
         {/* Intent Detection Notification Pill */}
         {intentInfo && note.note_type === 'auto' && (
-          <div className="hidden xs:flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-medium border bg-blue-500/10 border-blue-500/25 text-blue-300">
+          <div className="hidden xs:flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] font-medium border bg-blue-500/10 border-blue-500/25 text-blue-600 dark:text-blue-300">
             {intentInfo.is_coding ? (
               <>
-                <Zap className="w-3 h-3 text-amber-400 animate-pulse" />
+                <Zap className="w-3 h-3 text-amber-500 animate-pulse" />
                 <span className="truncate max-w-[120px] sm:max-w-none">Coding: {intentInfo.language ? intentInfo.language.toUpperCase() : 'DETECTED'}</span>
               </>
             ) : (
               <>
-                <FileText className="w-3 h-3 text-emerald-400" />
+                <FileText className="w-3 h-3 text-emerald-500" />
                 <span>Text Note</span>
               </>
             )}
@@ -195,27 +198,28 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
           <button
             onClick={handleCopyNote}
             title="Copy Note Content"
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.06] mac-btn transition"
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-control-hover)] mac-btn transition"
+            style={{ color: 'var(--text-secondary)' }}
           >
-            {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
           </button>
 
           {/* Favorite Toggle */}
           <button
             onClick={() => onUpdateNote({ is_favorite: !note.is_favorite })}
             title={note.is_favorite ? 'Remove Favorite' : 'Mark Favorite'}
-            className={`p-1.5 rounded-lg mac-btn transition ${
-              note.is_favorite ? 'text-amber-400 hover:bg-amber-400/15' : 'text-gray-400 hover:text-white hover:bg-white/[0.06]'
-            }`}
+            className="p-1.5 rounded-lg mac-btn transition hover:bg-[var(--bg-control-hover)]"
+            style={{ color: note.is_favorite ? '#eab308' : 'var(--text-secondary)' }}
           >
-            <Star className={`w-3.5 h-3.5 ${note.is_favorite ? 'fill-amber-400' : ''}`} />
+            <Star className={`w-3.5 h-3.5 ${note.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`} />
           </button>
 
           {/* Delete Note */}
           <button
             onClick={onDeleteNote}
             title="Delete Note"
-            className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/15 mac-btn transition"
+            className="p-1.5 rounded-lg hover:text-red-500 hover:bg-red-500/10 mac-btn transition"
+            style={{ color: 'var(--text-secondary)' }}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -230,7 +234,8 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
           value={note.title}
           onChange={e => onUpdateNote({ title: e.target.value })}
           placeholder="Untitled Note..."
-          className="w-full bg-transparent text-lg sm:text-xl font-bold tracking-tight text-white placeholder-gray-500 outline-none"
+          className="w-full bg-transparent text-lg sm:text-xl font-bold tracking-tight outline-none"
+          style={{ color: 'var(--text-primary)' }}
         />
 
         {/* Metadata Controls Row */}
@@ -239,19 +244,20 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
           <div
             className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg border mac-transition"
             style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.04)',
+              backgroundColor: 'var(--bg-control)',
               borderColor: 'var(--border-card)'
             }}
           >
-            <Folder className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+            <Folder className="w-3.5 h-3.5 text-blue-500 shrink-0" />
             <select
               value={note.category_id || ''}
               onChange={e => onUpdateNote({ category_id: e.target.value || null })}
-              className="bg-transparent text-gray-200 outline-none cursor-pointer text-xs pr-1 font-medium max-w-[120px] sm:max-w-none truncate"
+              className="bg-transparent outline-none cursor-pointer text-xs pr-1 font-medium max-w-[120px] sm:max-w-none truncate"
+              style={{ color: 'var(--text-primary)' }}
             >
-              <option value="" className="bg-[#0f172a] text-gray-400">Select Category</option>
+              <option value="" style={{ backgroundColor: 'var(--bg-surface-elevated)', color: 'var(--text-muted)' }}>Select Category</option>
               {categories.map(cat => (
-                <option key={cat.id} value={cat.id} className="bg-[#0f172a] text-gray-200">
+                <option key={cat.id} value={cat.id} style={{ backgroundColor: 'var(--bg-surface-elevated)', color: 'var(--text-primary)' }}>
                   {cat.name}
                 </option>
               ))}
@@ -261,9 +267,9 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
               onClick={handleAutoSuggestCategory}
               disabled={isSuggestingCat}
               title="Auto-categorize with local AI"
-              className="p-1 rounded text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 mac-btn transition"
+              className="p-1 rounded text-blue-500 hover:bg-blue-500/20 mac-btn transition"
             >
-              <Wand2 className={`w-3 h-3 ${isSuggestingCat ? 'animate-spin text-amber-400' : ''}`} />
+              <Wand2 className={`w-3 h-3 ${isSuggestingCat ? 'animate-spin text-amber-500' : ''}`} />
             </button>
           </div>
 
@@ -272,12 +278,17 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
             {note.tags.map(t => (
               <span
                 key={t}
-                className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-white/[0.06] text-gray-300 border border-white/[0.08]"
+                className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium border"
+                style={{
+                  backgroundColor: 'var(--bg-control)',
+                  borderColor: 'var(--border-control)',
+                  color: 'var(--text-secondary)'
+                }}
               >
                 #{t}
                 <button
                   onClick={() => handleRemoveTag(t)}
-                  className="hover:text-red-400 p-0.5 rounded"
+                  className="hover:text-red-500 p-0.5 rounded"
                 >
                   <X className="w-2.5 h-2.5" />
                 </button>
@@ -290,45 +301,51 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
               onChange={e => setTagInput(e.target.value)}
               onKeyDown={handleAddTag}
               placeholder="+ add tag..."
-              className="bg-transparent text-gray-300 placeholder-gray-500 text-xs px-2 py-0.5 outline-none w-20 hover:w-28 focus:w-28 transition-all"
+              className="bg-transparent text-xs px-2 py-0.5 outline-none w-20 hover:w-28 focus:w-28 transition-all"
+              style={{ color: 'var(--text-primary)' }}
             />
           </div>
         </div>
 
         {/* Quick Markdown Formatting Toolbar */}
-        <div className="flex items-center gap-1 pt-1 text-gray-400 text-xs overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 pt-1 text-xs overflow-x-auto no-scrollbar" style={{ color: 'var(--text-secondary)' }}>
           <button
             onClick={() => insertFormatting('**', '**')}
             title="Bold (**text**)"
-            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn shrink-0"
+            className="p-1.5 rounded hover:bg-[var(--bg-control-hover)] mac-btn shrink-0"
+            style={{ color: 'var(--text-secondary)' }}
           >
             <Bold className="w-3 h-3" />
           </button>
           <button
             onClick={() => insertFormatting('*', '*')}
             title="Italic (*text*)"
-            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn shrink-0"
+            className="p-1.5 rounded hover:bg-[var(--bg-control-hover)] mac-btn shrink-0"
+            style={{ color: 'var(--text-secondary)' }}
           >
             <Italic className="w-3 h-3" />
           </button>
           <button
             onClick={() => insertFormatting('```\n', '\n```')}
             title="Code Block"
-            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn shrink-0"
+            className="p-1.5 rounded hover:bg-[var(--bg-control-hover)] mac-btn shrink-0"
+            style={{ color: 'var(--text-secondary)' }}
           >
             <Code className="w-3 h-3" />
           </button>
           <button
             onClick={() => insertFormatting('- ')}
             title="Bullet List"
-            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn shrink-0"
+            className="p-1.5 rounded hover:bg-[var(--bg-control-hover)] mac-btn shrink-0"
+            style={{ color: 'var(--text-secondary)' }}
           >
             <List className="w-3 h-3" />
           </button>
           <button
             onClick={() => insertFormatting('> ')}
             title="Quote"
-            className="p-1.5 rounded hover:text-white hover:bg-white/[0.06] mac-btn shrink-0"
+            className="p-1.5 rounded hover:bg-[var(--bg-control-hover)] mac-btn shrink-0"
+            style={{ color: 'var(--text-secondary)' }}
           >
             <Quote className="w-3 h-3" />
           </button>
@@ -346,8 +363,11 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
               ? "Describe your programming task in ordinary English...\n\nExample:\n'Write a Python program that accepts a list of numbers, removes duplicate values and prints the numbers in ascending order.'"
               : "Type notes, algorithms, architectural specs, or technical thoughts here..."
           }
-          className="flex-1 w-full bg-transparent text-base sm:text-sm leading-relaxed text-gray-100 placeholder-gray-500 outline-none resize-none font-sans"
-          style={{ lineHeight: '1.7' }}
+          className="flex-1 w-full bg-transparent text-base sm:text-sm leading-relaxed outline-none resize-none font-sans"
+          style={{
+            color: 'var(--text-primary)',
+            lineHeight: '1.7'
+          }}
         />
 
         {/* Floating Quick Action Banner when Code Mode is active or Auto Mode detects coding task */}
@@ -362,14 +382,14 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
             }}
           >
             <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-              <div className="w-7 h-7 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-blue-600/15 border border-blue-500/30 flex items-center justify-center text-blue-500 shrink-0">
                 <Sparkles className="w-4 h-4 animate-spin-slow" />
               </div>
               <div className="text-left min-w-0">
-                <div className="text-xs font-semibold text-white tracking-tight truncate">
+                <div className="text-xs font-semibold tracking-tight truncate" style={{ color: 'var(--text-primary)' }}>
                   {isGenerating ? 'Generating Code with Local AI...' : 'Ready to Convert to Code'}
                 </div>
-                <div className="text-[10px] text-gray-400 truncate">
+                <div className="text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>
                   Target: {note.language?.toUpperCase() || 'PYTHON'}
                 </div>
               </div>
@@ -398,10 +418,11 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
 
       {/* Editor Footer (Desktop only) */}
       <div
-        className="hidden sm:flex h-9 px-4 border-t items-center justify-between text-[11px] text-gray-400 mac-acrylic shrink-0"
+        className="hidden sm:flex h-9 px-4 border-t items-center justify-between text-[11px] mac-acrylic shrink-0"
         style={{
           backgroundColor: 'var(--bg-header)',
-          borderColor: 'var(--border-subtle)'
+          borderColor: 'var(--border-subtle)',
+          color: 'var(--text-muted)'
         }}
       >
         <div className="flex items-center gap-2">
@@ -409,14 +430,14 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
             saveStatus === 'saved' ? 'bg-emerald-400' :
             saveStatus === 'saving' ? 'bg-amber-400 animate-pulse' : 'bg-blue-400'
           }`} />
-          <span className="capitalize text-gray-300 font-medium">{saveStatus} offline</span>
-          <span className="text-gray-600">|</span>
+          <span className="capitalize font-medium" style={{ color: 'var(--text-secondary)' }}>{saveStatus} offline</span>
+          <span style={{ color: 'var(--text-muted)' }}>|</span>
           <span>{note.content.trim() ? note.content.trim().split(/\s+/).length : 0} words</span>
-          <span className="text-gray-600">•</span>
+          <span style={{ color: 'var(--text-muted)' }}>•</span>
           <span>{note.content.length} characters</span>
         </div>
 
-        <div className="text-[10px] text-gray-500 font-mono">
+        <div className="text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>
           Markdown Enabled
         </div>
       </div>

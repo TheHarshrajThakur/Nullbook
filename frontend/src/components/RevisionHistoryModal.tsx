@@ -64,19 +64,20 @@ export const RevisionHistoryModal: React.FC<RevisionHistoryModalProps> = ({
           style={{ borderColor: 'var(--border-subtle)' }}
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-500 shrink-0">
               <History className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-white tracking-tight">Revision Timeline</h3>
-              <p className="text-[11px] text-gray-400 truncate">
-                Preserved code drafts for: <strong className="text-gray-200">{note.title}</strong>
+              <h3 className="text-sm font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>Revision Timeline</h3>
+              <p className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>
+                Preserved code drafts for: <strong style={{ color: 'var(--text-secondary)' }}>{note.title}</strong>
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.08] mac-btn transition shrink-0"
+            className="p-1.5 rounded-lg mac-btn transition shrink-0 hover:bg-[var(--bg-control-hover)]"
+            style={{ color: 'var(--text-secondary)' }}
           >
             <X className="w-4 h-4" />
           </button>
@@ -88,17 +89,17 @@ export const RevisionHistoryModal: React.FC<RevisionHistoryModalProps> = ({
           <div
             className="h-44 md:h-auto md:w-72 border-b md:border-b-0 md:border-r overflow-y-auto p-2.5 space-y-1.5 shrink-0"
             style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.25)',
+              backgroundColor: 'var(--bg-control)',
               borderColor: 'var(--border-subtle)'
             }}
           >
             {loading ? (
-              <div className="p-6 text-center text-xs text-gray-400 flex items-center justify-center gap-2">
-                <div className="w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+              <div className="p-6 text-center text-xs flex items-center justify-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                <div className="w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                 <span>Loading timeline...</span>
               </div>
             ) : revisions.length === 0 ? (
-              <div className="p-6 text-center text-xs text-gray-400 leading-relaxed">
+              <div className="p-6 text-center text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                 No previous snapshots recorded yet. When code is generated or revised, snapshots are preserved here automatically.
               </div>
             ) : (
@@ -110,23 +111,29 @@ export const RevisionHistoryModal: React.FC<RevisionHistoryModalProps> = ({
                     onClick={() => setSelectedRevision(rev)}
                     className={`p-3 rounded-xl cursor-pointer mac-transition text-left border ${
                       isSelected
-                        ? 'bg-blue-600/15 border-blue-500/40 text-white shadow-xs'
-                        : 'border-transparent hover:bg-white/[0.04] text-gray-300'
+                        ? 'bg-blue-600/10 border-blue-500/40 shadow-xs'
+                        : 'border-transparent hover:bg-[var(--bg-control-hover)]'
                     }`}
+                    style={{
+                      backgroundColor: isSelected ? undefined : 'var(--bg-card)'
+                    }}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-xs text-white">
+                      <span
+                        className="font-semibold text-xs"
+                        style={{ color: isSelected ? 'var(--accent-mac)' : 'var(--text-primary)' }}
+                      >
                         Revision #{rev.revision_number}
                       </span>
-                      <span className="text-[9px] text-blue-300 font-mono uppercase px-1.5 py-0.2 rounded-md bg-blue-500/20 border border-blue-500/25">
+                      <span className="text-[9px] text-blue-600 dark:text-blue-300 font-mono uppercase px-1.5 py-0.2 rounded-md bg-blue-500/15 border border-blue-500/25">
                         {rev.language}
                       </span>
                     </div>
-                    <p className="text-[11px] text-gray-400 line-clamp-1 mb-1.5 italic">
+                    <p className="text-[11px] line-clamp-1 mb-1.5 italic" style={{ color: 'var(--text-secondary)' }}>
                       "{rev.instruction}"
                     </p>
-                    <div className="flex items-center gap-1 text-[10px] text-gray-500 font-mono">
-                      <Clock className="w-3 h-3 text-gray-500" />
+                    <div className="flex items-center gap-1 text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>
+                      <Clock className="w-3 h-3" />
                       <span>{new Date(rev.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(rev.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
                     </div>
                   </div>
@@ -136,18 +143,24 @@ export const RevisionHistoryModal: React.FC<RevisionHistoryModalProps> = ({
           </div>
 
           {/* Revision Preview Area */}
-          <div className="flex-1 flex flex-col overflow-hidden bg-[#060910]">
+          <div
+            className="flex-1 flex flex-col overflow-hidden"
+            style={{ backgroundColor: 'var(--bg-code-editor)' }}
+          >
             {selectedRevision ? (
               <>
                 <div
-                  className="p-3 px-4 border-b flex items-center justify-between bg-black/30"
-                  style={{ borderColor: 'var(--border-subtle)' }}
+                  className="p-3 px-4 border-b flex items-center justify-between"
+                  style={{
+                    backgroundColor: 'var(--bg-control)',
+                    borderColor: 'var(--border-subtle)'
+                  }}
                 >
                   <div>
-                    <span className="text-xs font-semibold text-white tracking-tight">
+                    <span className="text-xs font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>
                       Revision #{selectedRevision.revision_number} ({selectedRevision.language.toUpperCase()})
                     </span>
-                    <p className="text-[11px] text-gray-400 truncate max-w-md">
+                    <p className="text-[11px] truncate max-w-md" style={{ color: 'var(--text-muted)' }}>
                       Prompt: "{selectedRevision.instruction}"
                     </p>
                   </div>
@@ -160,22 +173,29 @@ export const RevisionHistoryModal: React.FC<RevisionHistoryModalProps> = ({
                   </button>
                 </div>
 
-                <div className="flex-1 p-4 overflow-auto font-mono text-xs text-blue-50 whitespace-pre leading-relaxed code-font">
+                <div
+                  className="flex-1 p-4 overflow-auto font-mono text-xs whitespace-pre leading-relaxed code-font"
+                  style={{ color: 'var(--text-code)' }}
+                >
                   {selectedRevision.generated_code}
                 </div>
 
                 {selectedRevision.explanation && (
                   <div
-                    className="p-3 px-4 border-t bg-black/40 text-[11px] text-gray-300 max-h-28 overflow-y-auto font-sans"
-                    style={{ borderColor: 'var(--border-subtle)' }}
+                    className="p-3 px-4 border-t text-[11px] max-h-28 overflow-y-auto font-sans"
+                    style={{
+                      backgroundColor: 'var(--bg-control)',
+                      borderColor: 'var(--border-subtle)',
+                      color: 'var(--text-secondary)'
+                    }}
                   >
-                    <span className="font-semibold text-gray-300 block mb-1">Architecture Explanation:</span>
+                    <span className="font-semibold block mb-1" style={{ color: 'var(--text-primary)' }}>Architecture Explanation:</span>
                     <p className="leading-relaxed">{selectedRevision.explanation}</p>
                   </div>
                 )}
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-xs text-gray-500 font-medium">
+              <div className="flex-1 flex items-center justify-center text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
                 Select a revision to preview code
               </div>
             )}

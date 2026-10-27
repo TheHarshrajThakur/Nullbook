@@ -127,32 +127,34 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
           style={{ borderColor: 'var(--border-subtle)' }}
         >
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-red-500/15 border border-red-500/30 text-red-500 flex items-center justify-center">
               <Mic className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white tracking-tight">Offline Voice Control</h3>
-              <p className="text-[11px] text-gray-400">Dictate natural speech or execute commands hands-free</p>
+              <h3 className="text-sm font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>Offline Voice Control</h3>
+              <p className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>Dictate natural speech or execute commands hands-free</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.08] mac-btn transition"
+            className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/[0.08] mac-btn transition"
+            style={{ color: 'var(--text-tertiary)' }}
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* macOS Segmented Mode Switcher */}
-        <div className="p-3 px-5 border-b flex justify-center bg-black/20" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div className="p-3 px-5 border-b flex justify-center" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-control)' }}>
           <div className="mac-segmented w-full max-w-xs">
             <button
               onClick={() => setMode('command')}
               className={`flex-1 py-1 text-xs font-semibold rounded-md transition ${
                 mode === 'command'
                   ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-gray-400 hover:text-white'
+                  : 'hover:opacity-100'
               }`}
+              style={{ color: mode === 'command' ? '#ffffff' : 'var(--text-secondary)' }}
             >
               Command Mode
             </button>
@@ -161,8 +163,9 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
               className={`flex-1 py-1 text-xs font-semibold rounded-md transition ${
                 mode === 'dictation'
                   ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-gray-400 hover:text-white'
+                  : 'hover:opacity-100'
               }`}
+              style={{ color: mode === 'dictation' ? '#ffffff' : 'var(--text-secondary)' }}
             >
               Dictation Mode
             </button>
@@ -189,22 +192,22 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
           </div>
 
           <div>
-            <p className="text-xs font-semibold text-white tracking-tight">
+            <p className="text-xs font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>
               {isListening ? 'Listening locally... Speak clearly' : 'Click microphone to record'}
             </p>
-            <p className="text-[10px] text-gray-500 mt-0.5">Zero cloud data transmission</p>
+            <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Zero cloud data transmission</p>
           </div>
 
           {/* Transcript Preview Box */}
           <div
-            className="w-full min-h-[64px] p-3.5 rounded-xl border text-xs text-left bg-black/30"
-            style={{ borderColor: 'var(--border-subtle)' }}
+            className="w-full min-h-[64px] p-3.5 rounded-xl border text-xs text-left"
+            style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-input)' }}
           >
-            <span className="text-[9px] text-gray-500 block mb-1 uppercase font-semibold tracking-wider font-mono">
+            <span className="text-[9px] block mb-1 uppercase font-semibold tracking-wider font-mono" style={{ color: 'var(--text-muted)' }}>
               Live Transcript:
             </span>
-            <p className="text-gray-200 leading-relaxed font-sans">
-              {transcript || (manualInput ? manualInput : <span className="text-gray-500 italic">Say a command or type text below...</span>)}
+            <p className="leading-relaxed font-sans" style={{ color: 'var(--text-primary)' }}>
+              {transcript || (manualInput ? manualInput : <span className="italic" style={{ color: 'var(--text-muted)' }}>Say a command or type text below...</span>)}
             </p>
           </div>
 
@@ -218,8 +221,12 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
                 if (e.key === 'Enter') handleProcessTranscript(manualInput);
               }}
               placeholder="Or type voice command directly..."
-              className="flex-1 bg-black/30 border rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-blue-500/60 transition font-sans"
-              style={{ borderColor: 'var(--border-card)' }}
+              className="flex-1 border rounded-xl px-3 py-2 text-xs outline-none focus:border-blue-500/60 transition font-sans"
+              style={{
+                borderColor: 'var(--border-card)',
+                backgroundColor: 'var(--bg-input)',
+                color: 'var(--text-primary)'
+              }}
             />
             <button
               onClick={() => handleProcessTranscript(manualInput)}
@@ -232,15 +239,20 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
           {/* Confirmation Alert Dialog */}
           {showConfirmation && parsedCommand && (
             <div className="w-full p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-left space-y-2">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-300">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-500 dark:text-amber-300">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 <span>Confirmation Required</span>
               </div>
-              <p className="text-[11px] text-amber-200">{parsedCommand.confirmation_message}</p>
+              <p className="text-[11px] text-amber-600 dark:text-amber-200">{parsedCommand.confirmation_message}</p>
               <div className="flex justify-end gap-2 pt-1">
                 <button
                   onClick={() => setShowConfirmation(false)}
-                  className="px-3 py-1 text-xs rounded-lg bg-white/[0.08] text-gray-300 hover:text-white mac-btn"
+                  className="px-3 py-1 text-xs rounded-lg mac-btn border"
+                  style={{
+                    backgroundColor: 'var(--bg-control)',
+                    borderColor: 'var(--border-card)',
+                    color: 'var(--text-secondary)'
+                  }}
                 >
                   Cancel
                 </button>
@@ -256,7 +268,7 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
 
           {/* Example Command Chips */}
           <div className="w-full text-left pt-3 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
-            <p className="text-[9px] font-semibold text-gray-500 uppercase tracking-wider mb-2 font-mono">
+            <p className="text-[9px] font-semibold uppercase tracking-wider mb-2 font-mono" style={{ color: 'var(--text-muted)' }}>
               Supported Commands:
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -270,7 +282,12 @@ export const VoiceModal: React.FC<VoiceModalProps> = ({
                 <button
                   key={cmd}
                   onClick={() => handleProcessTranscript(cmd)}
-                  className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-white/[0.04] text-gray-300 hover:bg-blue-500/15 hover:text-blue-300 border border-white/[0.06] transition"
+                  className="px-2 py-0.5 rounded-md text-[10px] font-medium border transition"
+                  style={{
+                    backgroundColor: 'var(--bg-control)',
+                    borderColor: 'var(--border-card)',
+                    color: 'var(--text-secondary)'
+                  }}
                 >
                   "{cmd}"
                 </button>
