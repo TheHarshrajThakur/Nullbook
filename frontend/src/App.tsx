@@ -56,7 +56,8 @@ export function App() {
   const [revisionsModalOpen, setRevisionsModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
-  const autoSaveTimerRef = useRef<any>(null);
+  // Pending auto-save tracker to guarantee zero data loss when switching notes or refreshing
+  const pendingSaveRef = useRef<{ note: Note; timer: any } | null>(null);
 
   // Load initial data
   const loadInitialData = useCallback(async () => {
@@ -163,56 +164,122 @@ export function App() {
     } catch {}
   }, [sidebarCollapsed, sidebarWidth]);
 
-  // Debounced Auto-Save
-  const triggerAutoSave = (updatedNote: Note) => {
-    setSaveStatus('unsaved');
-    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+  // Immediate note persistence to local SQLite DB
+  const saveNoteDirectly = useCallback(async (noteToSave: Note) => {
+    setSaveStatus('saving');
+    try {
+      const saved = await api.updateNote(noteToSave.id, {
+        title: noteToSave.title,
+        content: noteToSave.content,
+        note_type: noteToSave.note_type,
+        category_id: noteToSave.category_id,
+        tags: noteToSave.tags,
+        language: noteToSave.language,
+        generated_code: noteToSave.generated_code,
+        explanation: noteToSave.explanation,
+        is_favorite: noteToSave.is_favorite,
+        is_pinned: noteToSave.is_pinned
+      });
 
-    autoSaveTimerRef.current = setTimeout(async () => {
-      setSaveStatus('saving');
+      // Update notes list: keep saved note updated and floated to top of recent
+      setNotes(prev => [saved, ...prev.filter(n => n.id !== saved.id)]);
+      setSaveStatus('saved');
+      return saved;
+    } catch (err) {
+      console.error('Failed to save note:', err);
+      setSaveStatus('error');
+      throw err;
+    }
+  }, []);
+
+  // Flush any pending debounced save immediately (called before switching notes, creating notes, or closing)
+  const flushPendingSave = useCallback(async () => {
+    if (pendingSaveRef.current) {
+      const { note, timer } = pendingSaveRef.current;
+      if (timer) clearTimeout(timer);
+      pendingSaveRef.current = null;
       try {
-        const saved = await api.updateNote(updatedNote.id, {
-          title: updatedNote.title,
-          content: updatedNote.content,
-          note_type: updatedNote.note_type,
-          category_id: updatedNote.category_id,
-          tags: updatedNote.tags,
-          language: updatedNote.language,
-          generated_code: updatedNote.generated_code,
-          explanation: updatedNote.explanation,
-          is_favorite: updatedNote.is_favorite,
-          is_pinned: updatedNote.is_pinned
-        });
-
-        // Also save draft for instant crash recovery
-        await api.saveDraft(updatedNote.id, {
-          title: updatedNote.title,
-          content: updatedNote.content,
-          generated_code: updatedNote.generated_code,
-          language: updatedNote.language
-        });
-
-        // Update list
-        setNotes(prev => prev.map(n => n.id === saved.id ? saved : n));
-        setSaveStatus('saved');
-      } catch (err) {
-        console.error('Autosave error:', err);
-        setSaveStatus('error');
+        await saveNoteDirectly(note);
+      } catch (e) {
+        console.error('Failed to flush pending save:', e);
       }
-    }, 500);
-  };
+    }
+  }, [saveNoteDirectly]);
 
-  // Note updates from Editor Area
+  // Debounced Auto-Save
+  const triggerAutoSave = useCallback((updatedNote: Note) => {
+    setSaveStatus('unsaved');
+    if (pendingSaveRef.current?.timer) {
+      clearTimeout(pendingSaveRef.current.timer);
+    }
+
+    const timer = setTimeout(async () => {
+      if (pendingSaveRef.current && pendingSaveRef.current.note.id === updatedNote.id) {
+        pendingSaveRef.current = null;
+        try {
+          await saveNoteDirectly(updatedNote);
+        } catch (err) {
+          console.error('Autosave error:', err);
+        }
+      }
+    }, 450);
+
+    pendingSaveRef.current = { note: updatedNote, timer };
+  }, [saveNoteDirectly]);
+
+  // Global Ctrl+S / Cmd+S shortcut to manually save current note immediately
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        if (pendingSaveRef.current) {
+          flushPendingSave();
+        } else if (activeNote) {
+          saveNoteDirectly(activeNote);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeNote, flushPendingSave, saveNoteDirectly]);
+
+  // Flush pending save when window unloads or reloads
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (pendingSaveRef.current) {
+        const { note } = pendingSaveRef.current;
+        api.updateNote(note.id, {
+          title: note.title,
+          content: note.content,
+          note_type: note.note_type,
+          category_id: note.category_id,
+          tags: note.tags,
+          language: note.language,
+          generated_code: note.generated_code,
+          explanation: note.explanation,
+          is_favorite: note.is_favorite,
+          is_pinned: note.is_pinned
+        }).catch(() => {});
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  // Note updates from Editor Area (real-time recent sorting & auto-save)
   const handleUpdateNote = (updates: Partial<Note>) => {
     if (!activeNote) return;
-    const updated: Note = { ...activeNote, ...updates };
+    const nowIso = new Date().toISOString();
+    const updated: Note = { ...activeNote, ...updates, updated_at: nowIso };
     setActiveNote(updated);
-    setNotes(prev => prev.map(n => n.id === updated.id ? updated : n));
+    // Move recently updated note immediately to the top of the notes explorer
+    setNotes(prev => [updated, ...prev.filter(n => n.id !== updated.id)]);
     triggerAutoSave(updated);
   };
 
-  // Create New Note
+  // Create New Note (flushes any unsaved edits first)
   const handleNewNote = async () => {
+    await flushPendingSave();
     try {
       const newNote = await api.createNote({
         title: 'Untitled Note',
@@ -222,7 +289,7 @@ export function App() {
         tags: selectedTag ? [selectedTag] : [],
         language: 'python'
       });
-      setNotes(prev => [newNote, ...prev]);
+      setNotes(prev => [newNote, ...prev.filter(n => n.id !== newNote.id)]);
       setActiveNote(newNote);
       setSaveStatus('saved');
       setMobileTab('editor');
@@ -236,10 +303,15 @@ export function App() {
     if (!activeNote) return;
     if (confirm(`Move note "${activeNote.title}" to trash?`)) {
       try {
+        if (pendingSaveRef.current?.timer) {
+          clearTimeout(pendingSaveRef.current.timer);
+          pendingSaveRef.current = null;
+        }
         await api.deleteNote(activeNote.id);
         const remaining = notes.filter(n => n.id !== activeNote.id);
         setNotes(remaining);
         setActiveNote(remaining.length > 0 ? remaining[0] : null);
+        setSaveStatus('saved');
       } catch (e) {
         console.error('Failed to delete note:', e);
       }
@@ -286,18 +358,26 @@ export function App() {
     });
   };
 
-  // Select Note from Search or Sidebar
-  const handleSelectNoteById = (noteId: string) => {
+  // Select Note from Search or Sidebar (flushes unsaved note first)
+  const handleSelectNoteById = async (noteId: string) => {
+    if (activeNote && activeNote.id === noteId) {
+      setMobileTab('editor');
+      return;
+    }
+    await flushPendingSave();
     const found = notes.find(n => n.id === noteId);
     if (found) {
       setActiveNote(found);
       setMobileTab('editor');
     } else {
-      api.getNote(noteId).then(n => {
+      try {
+        const n = await api.getNote(noteId);
         setActiveNote(n);
         setNotes(prev => [n, ...prev.filter(x => x.id !== n.id)]);
         setMobileTab('editor');
-      }).catch(console.error);
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
 
@@ -340,7 +420,13 @@ export function App() {
         handleDeleteNote();
         break;
       case 'save_note':
-        if (activeNote) triggerAutoSave(activeNote);
+        if (activeNote) {
+          if (pendingSaveRef.current) {
+            flushPendingSave();
+          } else {
+            saveNoteDirectly(activeNote);
+          }
+        }
         break;
       default:
         break;
@@ -383,7 +469,12 @@ export function App() {
           <Sidebar
             notes={notes}
             activeNoteId={activeNote?.id || null}
-            onSelectNote={n => {
+            onSelectNote={async n => {
+              if (activeNote && activeNote.id === n.id) {
+                setMobileTab('editor');
+                return;
+              }
+              await flushPendingSave();
               setActiveNote(n);
               setMobileTab('editor');
             }}
@@ -576,7 +667,7 @@ export function App() {
         note={activeNote}
         onRestoreRevision={revised => {
           setActiveNote(revised);
-          setNotes(prev => prev.map(n => n.id === revised.id ? revised : n));
+          setNotes(prev => [revised, ...prev.filter(n => n.id !== revised.id)]);
         }}
       />
 

@@ -55,14 +55,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return Array.from(set).sort();
   }, [notes]);
 
-  // Filter notes based on sidebar selections
+  // Filter and sort notes on a recent basis (most recently edited at top, with pinned notes priority)
   const filteredNotes = React.useMemo(() => {
-    return notes.filter(n => {
-      if (filterFavorites && !n.is_favorite) return false;
-      if (selectedCategory && n.category_id !== selectedCategory) return false;
-      if (selectedTag && !(n.tags || []).includes(selectedTag)) return false;
-      return true;
-    });
+    return notes
+      .filter(n => {
+        if (filterFavorites && !n.is_favorite) return false;
+        if (selectedCategory && n.category_id !== selectedCategory) return false;
+        if (selectedTag && !(n.tags || []).includes(selectedTag)) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        // Pinned notes stay at the top
+        if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
+        // Then sort on a recent basis (most recently updated first)
+        const timeA = new Date(a.updated_at || a.created_at || 0).getTime();
+        const timeB = new Date(b.updated_at || b.created_at || 0).getTime();
+        return timeB - timeA;
+      });
   }, [notes, filterFavorites, selectedCategory, selectedTag]);
 
   // Format relative date for note cards
@@ -274,11 +283,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
 
-        {/* Document History Note Cards (macOS Notes Style) */}
+        {/* Document History Note Cards (macOS / Notepad Style Recent Documents) */}
         {!collapsed && (
           <div className="pt-2 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
             <div className="px-2.5 pb-1.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-              <span>Documents ({filteredNotes.length})</span>
+              <span>Recent Documents ({filteredNotes.length})</span>
             </div>
             <div className="space-y-1">
               {filteredNotes.length === 0 ? (
@@ -314,6 +323,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           {n.title || 'Untitled Note'}
                         </span>
                         <div className="flex items-center gap-1 shrink-0">
+                          {n.is_pinned && <Pin className="w-3 h-3 text-blue-500 fill-blue-500/20" />}
                           {n.is_favorite && <Star className="w-3 h-3 text-amber-500 fill-amber-500" />}
                           <span className="text-[9px] font-mono" style={{ color: 'var(--text-muted)' }}>
                             {formatCardDate(n.updated_at)}

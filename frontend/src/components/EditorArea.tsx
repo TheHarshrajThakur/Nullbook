@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   FileText, Code, Sparkles, Tag, Folder, Plus, X,
   CheckCircle, AlertCircle, RefreshCw, Wand2, Star, Trash2,
-  Bold, Italic, List, Quote, Copy, Check, Zap, Command
+  Bold, Italic, List, Quote, Copy, Check, Zap, Command, Pin
 } from 'lucide-react';
 import { Note, Category, NoteType, SaveStatus } from '../types';
 import { api } from '../services/api';
@@ -202,6 +202,16 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
             style={{ color: 'var(--text-secondary)' }}
           >
             {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+          </button>
+
+          {/* Pin to Top Toggle */}
+          <button
+            onClick={() => onUpdateNote({ is_pinned: !note.is_pinned })}
+            title={note.is_pinned ? 'Unpin Note' : 'Pin Note to Top'}
+            className="p-1.5 rounded-lg mac-btn transition hover:bg-[var(--bg-control-hover)]"
+            style={{ color: note.is_pinned ? 'var(--accent-mac)' : 'var(--text-secondary)' }}
+          >
+            <Pin className={`w-3.5 h-3.5 ${note.is_pinned ? 'fill-blue-500 text-blue-500' : ''}`} />
           </button>
 
           {/* Favorite Toggle */}
