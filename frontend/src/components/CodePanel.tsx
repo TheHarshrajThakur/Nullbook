@@ -7,6 +7,7 @@ import {
 import { Note, ValidationResult, ExecutionResult } from '../types';
 import { api } from '../services/api';
 import { PanelSplitter } from './PanelSplitter';
+import { DsaVisualizer } from './dsa/DsaVisualizer';
 
 interface CodePanelProps {
   note: Note | null;
@@ -31,6 +32,7 @@ export const CodePanel: React.FC<CodePanelProps> = ({
   isGenerating,
   onOpenRevisions
 }) => {
+  const [panelTab, setPanelTab] = useState<'editor' | 'dsa'>('editor');
   const [copied, setCopied] = useState(false);
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
@@ -146,107 +148,166 @@ export const CodePanel: React.FC<CodePanelProps> = ({
           borderColor: 'var(--border-subtle)'
         }}
       >
-        {/* Language Selector */}
+        {/* Left Side: Segmented Mode Switcher & Language Selector */}
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Mode Switcher */}
           <div
-            className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg border mac-transition"
+            className="flex items-center p-0.5 rounded-lg border mac-acrylic"
             style={{
               backgroundColor: 'var(--bg-control)',
               borderColor: 'var(--border-card)'
             }}
           >
-            <span className="text-xs">
-              {SUPPORTED_LANGUAGES.find(l => l.id === currentLang)?.icon || '💻'}
-            </span>
-            <select
-              value={currentLang}
-              onChange={e => onUpdateCode(note.generated_code, e.target.value)}
-              className="bg-transparent text-xs font-semibold outline-none cursor-pointer pr-1"
-              style={{ color: 'var(--text-primary)' }}
+            <button
+              onClick={() => setPanelTab('editor')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition ${
+                panelTab === 'editor'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'hover:text-[var(--text-primary)]'
+              }`}
+              style={panelTab !== 'editor' ? { color: 'var(--text-secondary)' } : undefined}
             >
-              {SUPPORTED_LANGUAGES.map(lang => (
-                <option key={lang.id} value={lang.id} style={{ backgroundColor: 'var(--bg-surface-elevated)', color: 'var(--text-primary)' }}>
-                  {lang.name} (.{lang.ext})
-                </option>
-              ))}
-            </select>
+              <Code className="w-3.5 h-3.5" />
+              <span>Editor</span>
+            </button>
+            <button
+              onClick={() => setPanelTab('dsa')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition ${
+                panelTab === 'dsa'
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
+                  : 'hover:text-[var(--text-primary)]'
+              }`}
+              style={panelTab !== 'dsa' ? { color: 'var(--text-secondary)' } : undefined}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>DSA Visualizer</span>
+            </button>
           </div>
 
-          {/* Validation Status Badge */}
-          {renderValidationBadge()}
+          {panelTab === 'editor' && (
+            <>
+              {/* Language Selector */}
+              <div
+                className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg border mac-transition"
+                style={{
+                  backgroundColor: 'var(--bg-control)',
+                  borderColor: 'var(--border-card)'
+                }}
+              >
+                <span className="text-xs">
+                  {SUPPORTED_LANGUAGES.find(l => l.id === currentLang)?.icon || '💻'}
+                </span>
+                <select
+                  value={currentLang}
+                  onChange={e => onUpdateCode(note.generated_code, e.target.value)}
+                  className="bg-transparent text-xs font-semibold outline-none cursor-pointer pr-1"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  {SUPPORTED_LANGUAGES.map(lang => (
+                    <option key={lang.id} value={lang.id} style={{ backgroundColor: 'var(--bg-surface-elevated)', color: 'var(--text-primary)' }}>
+                      {lang.name} (.{lang.ext})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Validation Status Badge */}
+              {renderValidationBadge()}
+            </>
+          )}
         </div>
 
         {/* Right Actions Bar */}
         <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-          {/* Revisions History Button */}
-          <button
-            onClick={onOpenRevisions}
-            title="View Code Revision History"
-            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-[var(--bg-control-hover)] text-xs font-medium border mac-btn transition"
-            style={{ borderColor: 'var(--border-card)', color: 'var(--text-secondary)' }}
-          >
-            <History className="w-3.5 h-3.5 text-blue-500" />
-            <span className="hidden sm:inline">Revisions</span>
-            <span className="text-[10px] px-1 rounded bg-blue-500/15 text-blue-600 dark:text-blue-300 font-mono">
-              {note.revisions_count || 0}
-            </span>
-          </button>
+          {panelTab === 'editor' ? (
+            <>
+              {/* Revisions History Button */}
+              <button
+                onClick={onOpenRevisions}
+                title="View Code Revision History"
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-[var(--bg-control-hover)] text-xs font-medium border mac-btn transition"
+                style={{ borderColor: 'var(--border-card)', color: 'var(--text-secondary)' }}
+              >
+                <History className="w-3.5 h-3.5 text-blue-500" />
+                <span className="hidden sm:inline">Revisions</span>
+                <span className="text-[10px] px-1 rounded bg-blue-500/15 text-blue-600 dark:text-blue-300 font-mono">
+                  {note.revisions_count || 0}
+                </span>
+              </button>
 
-          {/* Copy Button */}
-          <button
-            onClick={handleCopy}
-            disabled={!note.generated_code}
-            title="Copy Code to Clipboard"
-            className="p-1.5 rounded-lg hover:bg-[var(--bg-control-hover)] mac-btn transition disabled:opacity-30"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-          </button>
+              {/* Copy Button */}
+              <button
+                onClick={handleCopy}
+                disabled={!note.generated_code}
+                title="Copy Code to Clipboard"
+                className="p-1.5 rounded-lg hover:bg-[var(--bg-control-hover)] mac-btn transition disabled:opacity-30"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+              </button>
 
-          {/* Export Dropdown */}
-          <div className="relative group">
-            <button
-              disabled={!note.generated_code}
-              title="Export Source File"
-              className="p-1.5 rounded-lg hover:bg-[var(--bg-control-hover)] mac-btn transition disabled:opacity-30"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              <Download className="w-4 h-4" />
-            </button>
-            <div
-              className="absolute right-0 top-full mt-1.5 hidden group-hover:block border rounded-xl shadow-2xl p-1 z-50 min-w-[140px] mac-acrylic"
-              style={{
-                backgroundColor: 'var(--bg-surface-elevated)',
-                borderColor: 'var(--border-card)'
-              }}
-            >
-              <button
-                onClick={() => handleExport(SUPPORTED_LANGUAGES.find(l => l.id === currentLang)?.ext || 'txt')}
-                className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-600 hover:text-white rounded-lg transition font-medium"
-                style={{ color: 'var(--text-primary)' }}
-              >
-                .{SUPPORTED_LANGUAGES.find(l => l.id === currentLang)?.ext || 'txt'} File
-              </button>
-              <button
-                onClick={() => handleExport('md')}
-                className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-600 hover:text-white rounded-lg transition font-medium"
-                style={{ color: 'var(--text-primary)' }}
-              >
-                Markdown (.md)
-              </button>
-              <button
-                onClick={() => handleExport('txt')}
-                className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-600 hover:text-white rounded-lg transition font-medium"
-                style={{ color: 'var(--text-primary)' }}
-              >
-                Plain Text (.txt)
-              </button>
+              {/* Export Dropdown */}
+              <div className="relative group">
+                <button
+                  disabled={!note.generated_code}
+                  title="Export Source File"
+                  className="p-1.5 rounded-lg hover:bg-[var(--bg-control-hover)] mac-btn transition disabled:opacity-30"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+                <div
+                  className="absolute right-0 top-full mt-1.5 hidden group-hover:block border rounded-xl shadow-2xl p-1 z-50 min-w-[140px] mac-acrylic"
+                  style={{
+                    backgroundColor: 'var(--bg-surface-elevated)',
+                    borderColor: 'var(--border-card)'
+                  }}
+                >
+                  <button
+                    onClick={() => handleExport(SUPPORTED_LANGUAGES.find(l => l.id === currentLang)?.ext || 'txt')}
+                    className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-600 hover:text-white rounded-lg transition font-medium"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    .{SUPPORTED_LANGUAGES.find(l => l.id === currentLang)?.ext || 'txt'} File
+                  </button>
+                  <button
+                    onClick={() => handleExport('md')}
+                    className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-600 hover:text-white rounded-lg transition font-medium"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    Markdown (.md)
+                  </button>
+                  <button
+                    onClick={() => handleExport('txt')}
+                    className="w-full text-left px-3 py-1.5 text-xs hover:bg-blue-600 hover:text-white rounded-lg transition font-medium"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    Plain Text (.txt)
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-indigo-400 flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20">
+                <Sparkles className="w-3 h-3 text-indigo-400" />
+                <span>Interactive Visualizer</span>
+              </span>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Editor Main Canvas (Dark or Light Theme Compatible) */}
+      {panelTab === 'dsa' ? (
+        <DsaVisualizer
+          onInsertCode={(code, lang) => {
+            onUpdateCode(code, lang);
+            setPanelTab('editor');
+          }}
+        />
+      ) : (
+        <>
+          {/* Editor Main Canvas (Dark or Light Theme Compatible) */}
       <div
         className="flex-1 flex flex-col min-h-0 relative overflow-hidden"
         style={{ backgroundColor: 'var(--bg-code-editor)' }}
@@ -463,6 +524,8 @@ export const CodePanel: React.FC<CodePanelProps> = ({
           <span className="sm:hidden">Regen</span>
         </button>
       </div>
+        </>
+      )}
     </div>
   );
 };
