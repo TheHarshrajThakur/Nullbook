@@ -3,7 +3,7 @@ import {
   SystemStatus, ValidationResult, ExecutionResult, VoiceCommandResponse
 } from '../types';
 
-const API_BASE = 'http://127.0.0.1:8765/api';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) || 'http://127.0.0.1:8765/api';
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {

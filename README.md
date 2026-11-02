@@ -1,6 +1,6 @@
-# IntelliNote AI — Offline Intelligent Notepad and Code Generator
+# Nullbook — Local-First AI Intelligent Notepad, Code Generator & DSA Visualizer
 
-An intelligent Windows desktop workspace that understands the logical meaning of what you write and automatically converts natural-language requirements into working code in your chosen language — running **100% offline and private** on your local machine.
+An intelligent web application workspace that understands the logical meaning of what you write and automatically converts natural-language requirements into working code in your chosen language — running **100% offline and private** on your local machine or deployable as a modern web application.
 
 ---
 
@@ -10,33 +10,36 @@ An intelligent Windows desktop workspace that understands the logical meaning of
    - Unified workspace with Write Mode, Code Mode, and automatic intent detection.
    - Preserves original requirements alongside generated solutions.
    - Autosave with instant crash recovery drafts.
-2. **Natural-Language-to-Code Generation:**
+2. **Interactive DSA Visualizer:**
+   - Interactive step-by-step visual playback for Arrays, Sorting, Binary Trees (BST), Linked Lists, Stacks, and Graphs.
+   - Time & Space complexity badges, code synchronization with active line highlighting, and custom input testing.
+3. **Natural-Language-to-Code Generation:**
    - Supports Python, JavaScript, Java, C, and C++ (extensible architecture).
    - Driven by local language models via Ollama (candidate: `Qwen2.5-Coder`).
    - Revision history preserves every generated code version without erasing prior drafts.
    - Syntax validation across all supported languages and sandboxed test execution.
-3. **Automatic Categorisation:**
+4. **Automatic Categorisation:**
    - Hybrid classifier combining rule-based heuristics, semantic embedding similarity, and an active user feedback learning store.
    - Auto-tags notes and marks ambiguous content as `Uncategorized` below confidence thresholds.
-4. **Intelligent Offline Search:**
+5. **Intelligent Offline Search:**
    - **Keyword Search:** Exact terms, identifiers, and syntax via SQLite FTS5 with BM25 ranking.
    - **Semantic Search:** Vector embeddings + cosine similarity for conceptual discovery.
    - **Filtered Search:** Categorical, language, and tag-based filtering with matched snippet highlighting.
-5. **Offline Voice Dictation & Commands:**
+6. **Offline Voice Dictation & Commands:**
    - Local speech-to-text with no remote cloud APIs.
    - Dictation mode: transcribes natural speech into note content.
    - Command mode: strict allowlist parser ("Create new note", "Search for...", "Generate code", "Switch language to C++", "Delete note" with safety confirmations).
 
 ---
 
-## 2. Offline-First Architecture
+## 2. Web Application Architecture
 
 ```mermaid
 graph TD
-    subgraph Desktop [Electron Windows Desktop Client]
-        MainProc[Electron Main Process]
-        Preload[Secure Context Bridge & IPC]
-        UI[React + Vite Workspace UI]
+    subgraph Frontend [Modern Web Application Client]
+        UI[React 19 + Vite + Tailwind UI]
+        DSA[Interactive DSA Visualizer]
+        Editor[Markdown & Code Editor]
     end
 
     subgraph Backend [Local Python FastAPI Microservice]
@@ -63,7 +66,8 @@ graph TD
     end
 
     UI --> Backend
-    MainProc --> Backend
+    DSA --> Backend
+    Editor --> Backend
     Backend --> Storage
     Backend --> Offline_AI
 ```
@@ -121,27 +125,19 @@ cd ..
 
 ## 5. Running the Application
 
-### Option A: Complete Desktop Application (Electron)
-```bash
-# In the project root:
-npm install
-npm start
-```
-*Electron will automatically launch the local FastAPI backend, wait for health check, and display the native workspace window.*
-
-### Option B: Standalone Web/Development Mode
 1. **Start Backend Server:**
    ```bash
    .\.venv\Scripts\python.exe backend/run_server.py
    ```
    *Backend runs at `http://127.0.0.1:8765`.*
 
-2. **Start Frontend Dev Server:**
+2. **Start Frontend Web Application:**
    ```bash
-   cd frontend
+   npm start
+   # or
    npm run dev
    ```
-   *Open browser at `http://127.0.0.1:5173`.*
+   *Open your browser at `http://127.0.0.1:5173`.*
 
 ---
 
@@ -164,19 +160,8 @@ The test suite validates:
 
 ---
 
-## 7. Packaging for Windows (Installer)
-
-To build the standalone Windows installer (`.exe` via NSIS):
-```bash
-npm run build:frontend
-npm run package:win
-```
-The resulting installer will be located in the `release/` directory.
-
----
-
-## 8. Security & Privacy Guarantees
+## 7. Security & Privacy Guarantees
 
 - **Zero Cloud Leakage:** All notes, generated code, embeddings, and database indexes reside strictly in local files (`data/intellinote.db`). No telemetry or telemetry tokens are transmitted.
 - **Sandboxed Execution:** Code execution is strictly separated from generation, never triggers automatically, and enforces a 5-second process timeout, memory caps, and temporary directory wipes.
-- **Electron Hardening:** Renderer operates with `contextIsolation: true`, `nodeIntegration: false`, and `sandbox: true`.
+- **Client Security:** Standard web sandbox boundaries and sanitized HTML rendering prevent any arbitrary code execution in the browser.
